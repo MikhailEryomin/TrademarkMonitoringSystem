@@ -1,5 +1,9 @@
 requests
 beautifulsoup4
+aiohttp
+fake-useragent
+langdetect
+
 fastapi
 uvicorn
 sqlalchemy

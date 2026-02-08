@@ -15,7 +15,7 @@ QWERTY_MAP = {
 # Source from APWG
 # TLD-squatting
 TLDS = [
-    'com', 'uk', 'ru', 'info', 'net', 'live', 'link', 'org', 'xyz', 'me', 'br', 'site', 'online'
+    'com', 'uk', 'ru', 'рф', 'su', 'info', 'net', 'live', 'link', 'org', 'xyz', 'me', 'site', 'online'
 ]
 
 # Homoglyphs squatting
@@ -69,7 +69,8 @@ KEYWORDS = [
 	'signin','auth','map','services','location','gift','accounts','live',
 	'track','m','uk','es','co','supports','findmyphone','device','fr','pay',
 	'chat','inc','log','fmi','i','nitro','center','event', 
-    'russia', 'msk', 'spb', 'krd'
+    #ru-segment
+    'russia', 'msk', 'spb', 'krd', 'ekb', 'samara', 'nn', '77', '78', '23', '96', '63'
 ]
 
 # heuristic data 
