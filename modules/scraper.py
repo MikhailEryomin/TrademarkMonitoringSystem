@@ -12,7 +12,7 @@ from langdetect import detect, LangDetectException
 CONCURRENCY_LIMIT = 50
 TIMEOUT_SECONDS = 5
 HTML_CONTENT_CHARACTERS_LIMIT = 4000
-OUTPUT_FILE = "scraped_data.json"
+OUTPUT_DIR = 'output/json'
 
 PARKING_KEYWORDS = [
     "domain is for sale", "buy this domain", "domain name is available",
@@ -163,13 +163,14 @@ class AsyncScraper:
                         html = await response.text(errors='ignore')
                         metadata = self.extract_metadata(html, final_url)
                         
-                        # 3. Checking for parked domain
+                        # 3. Setting status
+                        # Checking for parked domain
                         if self.is_parked(metadata['content_sample'], metadata['title']):
                             print(f"[.] Parked: {target_url}")
                             metadata['status'] = 'parked'
                             return metadata
 
-                        # 4. Setting status
+                        # Checking for redirect address
                         if is_redirect:
                             print(f"[>] Redirect: {target_url} -> {final_url}")
                             metadata['status'] = 'redirect'
@@ -180,15 +181,15 @@ class AsyncScraper:
                         
                         return metadata
                         
-                except socket.gaierror:
-                    continue
+                except (aiohttp.ClientConnectorError, socket.gaierror, asyncio.TimeoutError) as e:
+                    return None
                 except Exception:
                     continue
             
             return None
 
 
-    async def run(self, domains: List[str]):
+    async def run(self, brandname: str, domains: List[str]):
         """Запускает весь процесс"""
         print(f"Starting scanner for {len(domains)} domains...")
         
@@ -207,10 +208,37 @@ class AsyncScraper:
         print(f"Total domains checked: {len(domains)}")
         print(f"Alive sites found: {len(results)}")
         
-        self.save_results(results)
+        self.save_results(brandname, results)
 
 
-    def save_results(self, data: List[Dict]):
+    def save_results(self, brandname: str, data: List[Dict]):
+        OUTPUT_FILE = f'{OUTPUT_DIR}/data_{brandname}.json'
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         print(f"Data saved to {OUTPUT_FILE}")
+
+
+def start(brandname: str, domains: List[str]):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    loop.set_exception_handler(silence_event_loop_exceptions)
+
+    async_scraper = AsyncScraper()
+    try:
+        loop.run_until_complete(async_scraper.run(brandname, domains))
+    finally:
+        loop.close()
+
+
+def silence_event_loop_exceptions(loop, context):
+    exception = context.get('exception')
+    
+    if isinstance(exception, (socket.gaierror, aiohttp.ClientConnectorError)):
+        return 
+    
+    msg = context.get('message')
+    if "getaddrinfo failed" in str(msg) or "getaddrinfo failed" in str(exception):
+        return
+
+    loop.default_exception_handler(context)

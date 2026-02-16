@@ -49,6 +49,9 @@ INDUSTRY_MAPPING = {
     # 39 (Перевозки/Аренда) - кейсы типа Uber, Yandex Go
     'auto': {12, 37, 39},
 
+    # Маркетплейсы, магазины (Avito, Ozon, WB...)
+    'market': {35},
+
     # Финансы и Крипта
     # Финтех часто регистрирует и 36 (финансы) и 9/42 (софт)
     # Но для генерации слов лучше оставить жесткую привязку к 36
@@ -61,16 +64,21 @@ INDUSTRY_MAPPING = {
     'media': {41},
 }
 
-# Source from akamai analysis in 2023
+
 KEYWORDS = [
+    # Source from akamai analysis in 2024
     'support', 'com', 'login', 'help', 'secure', 'www', 'account',
     'app','verify','service','us','id','jp','find','online','info',
     'update','security','web','maps','my','alert','mail','verification',
 	'signin','auth','map','services','location','gift','accounts','live',
 	'track','m','uk','es','co','supports','findmyphone','device','fr','pay',
 	'chat','inc','log','fmi','i','nitro','center','event', 
-    #ru-segment
-    'russia', 'msk', 'spb', 'krd', 'ekb', 'samara', 'nn', '77', '78', '23', '96', '63'
+    #ru-segment (heuristric data or yandex wordstats source)
+    'russia', 'msk', 'spb', 'krd', 'ekb', 'samara', 'nn', '77', '78', '23', '96', '63',
+    'vhod', 'kabinet', 'online', 'oficialniy', 'kupit', 'zakaz', 
+    'cena', 'otzyvy', 'moskva', 'spb', 'dostavka', 'oplata', 
+    'lk', 'bank', 'zaim', 'karta', 'bonus', 
+    'invest', 'gaz', 'neft', 'shop', 'store', 'market'
 ]
 
 # heuristic data 
@@ -119,5 +127,13 @@ INDUSTRY_KEYWORDS = {
     'media': [
         'play', 'watch', 'stream', 'game', 'bet', 'casino', 
         'study', 'course', 'school', 'live', 'video', 'news'
+    ], 
+
+    'market' : [
+        'seller', 'partner', 'business', 'kabinet', 'merchant', 'login',
+        'delivery', 'dostavka', 'track', 'order', 'pvz', 'post', 'express',
+        'pay', 'card', 'refund', 'money', 'cash', 'vozvrat', 'oplata',
+        'job', 'work', 'rabota', 'driver', 'courier', 'hr', 'team',
+        'promo', 'sale', 'gift', 'bonus', 'prize', 'win', 'free'
     ]
 }

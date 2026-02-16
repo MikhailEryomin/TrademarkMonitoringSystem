@@ -107,15 +107,21 @@ def generate_domains(brand_name: str, mktu_classes: list[int]) -> list[str]:
     final_domains = populate_tld(base_variations)
 
     print(f"Total domains generated: {len(final_domains)}")
+
+    for d in list(final_domains):
+        print(d)
     
     return list(final_domains)
 
 if __name__ == "__main__":
-    brand = "sberbank"
-    mktu_classes = [36] # Finance
+    brand = "adidas"
+    mktu_classes = [18, 25, 28]
 
     potential_domains = generate_domains(brand, mktu_classes)
 
     print("\n--- Some generated examples (first 20) ---")
-    for i, domain in enumerate(potential_domains[:20]):
-        print(f"{i+1:2d}. {domain}")
+    with open('output/domains.txt', 'w', encoding='utf-8') as file:
+        for i, domain in enumerate(potential_domains):
+            print(f"{i+1:2d}. {domain}")
+            print(domain)
+            file.write(domain + '\n')

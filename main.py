@@ -1,8 +1,11 @@
-import asyncio
+import modules.scraper as scraper
 from modules.generator import generate_domains
-from modules.scraper import AsyncScraper
 
-domains = generate_domains("samsung", [9, 11])
+#domains = generate_domains("avito", [35])
+domains = []
+brandname = 'grey'
+with open('output/domains/main/grey_sources.txt', 'r', encoding='utf-8') as file:
+    for domain in file:
+        domains.append(domain.strip())
 
-scraper = AsyncScraper()
-asyncio.run(scraper.run(domains))
+scraper.start(brandname, domains)
