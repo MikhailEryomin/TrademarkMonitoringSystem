@@ -8,3 +8,6 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2
+
+pandas
+openpyxl

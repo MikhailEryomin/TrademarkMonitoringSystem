@@ -13,6 +13,7 @@ CONCURRENCY_LIMIT = 50
 TIMEOUT_SECONDS = 5
 HTML_CONTENT_CHARACTERS_LIMIT = 4000
 OUTPUT_DIR = 'output/json'
+RELEVANT_LANGUAGES = ['ru', 'en', 'unknown']
 
 PARKING_KEYWORDS = [
     "domain is for sale", "buy this domain", "domain name is available",
@@ -90,6 +91,7 @@ class AsyncScraper:
             language = detect(full_text[:500])
         except LangDetectException:
             language = "unknown"
+        
 
         # 3. Getting contacts
         emails = set(re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', full_text))
@@ -147,6 +149,9 @@ class AsyncScraper:
                         ssl=False
                     ) as response:
                         
+                        # ---------
+                        # FILTERING
+                        # ---------
                         # 1. Checking for dead websites
                         if response.status >= 400:
                             print(f"[-] Dead ({response.status}): {target_url}")
@@ -162,13 +167,17 @@ class AsyncScraper:
                         
                         html = await response.text(errors='ignore')
                         metadata = self.extract_metadata(html, final_url)
+
+                        # 3. Checking for content language
+                        if metadata['language'] not in RELEVANT_LANGUAGES:
+                            return None
                         
-                        # 3. Setting status
+                        # 4. Setting status
                         # Checking for parked domain
                         if self.is_parked(metadata['content_sample'], metadata['title']):
                             print(f"[.] Parked: {target_url}")
                             metadata['status'] = 'parked'
-                            return metadata
+                            return None
 
                         # Checking for redirect address
                         if is_redirect:

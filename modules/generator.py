@@ -114,8 +114,8 @@ def generate_domains(brand_name: str, mktu_classes: list[int]) -> list[str]:
     return list(final_domains)
 
 if __name__ == "__main__":
-    brand = "adidas"
-    mktu_classes = [18, 25, 28]
+    brand = "ozon"
+    mktu_classes = [35]
 
     potential_domains = generate_domains(brand, mktu_classes)
 

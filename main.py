@@ -3,8 +3,8 @@ from modules.generator import generate_domains
 
 #domains = generate_domains("avito", [35])
 domains = []
-brandname = 'grey'
-with open('output/domains/main/grey_sources.txt', 'r', encoding='utf-8') as file:
+brandname = 'Ozon'
+with open('output/domains/other/ozon_domains.txt', 'r', encoding='utf-8') as file:
     for domain in file:
         domains.append(domain.strip())
 
