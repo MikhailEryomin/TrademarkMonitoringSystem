@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import (
     create_engine,
     Column,
@@ -5,27 +7,37 @@ from sqlalchemy import (
     String,
     Date,
     Text,
-    ForeignKey
+    ForeignKey, DateTime, Boolean, Float, JSON
 )
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker
 
 Base = declarative_base()
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5430/trademarks"
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Trademark(Base):
     __tablename__ = 'trademarks'
 
+    # id!!!
     id = Column(Integer, primary_key=True)
-    registration_number = Column(String(50), unique=True, index=True,
-                                 nullable=True)  # Номер регистрации (Может быть NULL для заявок)
-    application_number = Column(String(50), unique=True, index=True, nullable=False)  # Номер заявки
-    application_date = Column(Date, nullable=False)  # Дата подачи заявки
-    registration_date = Column(Date, nullable=True)  # Дата регистрации (Может быть NULL для заявок)
-    name = Column(String(255), index=True)  # Имя товарного знака
-    status = Column(String(50), nullable=False, default='Заявка',
-                    index=True)  # Статус: Заявка, Действует, Недействует (истекший срок/прекратил действие)
-    sign_type = Column(String(100), nullable=False)  # Тип: Словесный, Изобразительный, Комбинированный
-    image_url = Column(String(512))  # Путь к локально сохраненному файлу изображения
+    # Номер регистрации!!! (Может быть NULL для заявок)
+    registration_number = Column(String(50), unique=True, index=True, nullable=True)
+    # Имя товарного знака!!!
+    name = Column(String(255), index=True)
+    # Номер заявки
+    application_number = Column(String(50), unique=True, index=True, nullable=True)
+    # Дата подачи заявки
+    application_date = Column(Date, nullable=True)
+    # Дата регистрации (Может быть NULL для заявок)
+    registration_date = Column(Date, nullable=True)
+    # Статус: Заявка, Действует, Недействует (истекший срок/прекратил действие)
+    status = Column(String(50), nullable=False, default='Заявка', index=True)
+    # Тип: Словесный, Изобразительный, Комбинированный
+    sign_type = Column(String(100), nullable=False)
+    # Путь к локально сохраненному файлу изображения
+    image_url = Column(String(512))
 
     # --- Внешние связи ---
     owner_id = Column(Integer, ForeignKey('owners.id'), nullable=False)
@@ -73,7 +85,7 @@ class ScanResult(Base):
     id = Column(Integer, primary_key=True)
     trademark_id = Column(Integer, ForeignKey('trademarks.id'))
     domain_name = Column(String(255), index=True)
-    scan_date = Column(DateTime, default=datetime.utcnow)
+    scan_date = Column(DateTime, default=datetime.now())
 
     # Raw Data from Scraper
     url = Column(String)
@@ -92,11 +104,6 @@ class ScanResult(Base):
     is_confirmed = Column(Boolean, default=False)  # Флаг проверки человеком
 
     trademark = relationship("Trademark")
-
-
-DATABASE_URL = "postgresql://postgres:postgres@localhost/trademarks"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def create_db_and_tables():

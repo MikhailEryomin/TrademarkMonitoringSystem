@@ -6,6 +6,8 @@ from modules.analyzer import FeatureExtractor
 from modules.classifier import TrademarkClassifier
 from modules.tm_parser import TrademarkParser, get_fips_url
 
+from core.models import SessionLocal, Trademark, Owner, TrademarkMKTUClass
+
 
 class TrademarkPipeline:
     """
@@ -27,23 +29,77 @@ class TrademarkPipeline:
         self.classifier = TrademarkClassifier()
 
     def _parse_trademark(self):
-        """Шаг 0: Парсит данные о товарном знаке с ФИПС."""
-        print("--- 0. Trademark Parsing (FIPS) ---")
-        url = get_fips_url(self.tm_number)
-        self.tm_data = self.parser.process_trademark_url(url)
+        """Шаг 0: Проверяет БД (Кэш), если нет — парсит ФИПС и сохраняет."""
+        print("--- 0. Trademark Parsing & DB Caching ---")
 
-        brand_name_orig = self.tm_data.get("name", "unknown")
-        brand_name_lat = get_transliterated_name(brand_name_orig)
+        db = SessionLocal()
+        try:
+            cached_tm = db.query(Trademark).filter_by(registration_number=self.tm_number).first()
 
-        self.tm_db = {
-            "name": brand_name_orig,
-            "name_lat": brand_name_lat,
-            "owner_name": self.tm_data.get("owner_name") or "Unknown Owner",
-            "mktu_descriptions": [
-                cls.get("description", "") for cls in self.tm_data.get("mktu_classes", [])
-            ],
-        }
-        print(json.dumps(self.tm_data, indent=2, ensure_ascii=False))
+            if cached_tm:
+                print(f"[*] Знак №{self.tm_number} найден в базе (КЭШ)! Пропускаем запрос к ФИПС.")
+                brand_name_orig = cached_tm.name or "unknown"
+                brand_name_lat = get_transliterated_name(brand_name_orig)
+                owner_name = cached_tm.owner.name if cached_tm.owner else "Unknown Owner"
+
+                self.tm_data = {
+                    "registration_number": cached_tm.registration_number,
+                    "name": brand_name_orig,
+                    "name_lat": brand_name_lat,
+                    "owner_name": owner_name,
+                    "mktu_classes": [
+                        {"number": c.mktu_class_number, "description": c.description}
+                        for c in cached_tm.mktu_classes
+                    ]
+                }
+            else:
+                print(f"[*] Знак №{self.tm_number} не найден. Запрашиваем из ФИПС...")
+                url = get_fips_url(self.tm_number)
+                self.tm_data = self.parser.process_trademark_url(url)
+
+                brand_name_orig = self.tm_data.get("name", "unknown")
+                owner_name = self.tm_data.get("owner_name") or "Unknown Owner"
+
+                # --- СОХРАНЯЕМ В БАЗУ ДАННЫХ ---
+                # Ищем владельца, если нет - создаем
+                owner = db.query(Owner).filter_by(name=owner_name).first()
+                if not owner:
+                    owner = Owner(name=owner_name)
+                    db.add(owner)
+
+                # Создаем знак
+                new_tm = Trademark(
+                    registration_number=self.tm_number,
+                    name=brand_name_orig,
+                    sign_type=self.tm_data.get("sign_type", "Комбинированный"),
+                    image_url=self.tm_data.get("image_url"),
+                    owner=owner
+                )
+
+                # Добавляем классы МКТУ
+                for cls in self.tm_data.get("mktu_classes", []):
+                    new_tm.mktu_classes.append(TrademarkMKTUClass(
+                        mktu_class_number=cls["number"],
+                        description=cls["description"]
+                    ))
+
+                db.add(new_tm)
+                db.commit()
+                print(f"[+] Знак №{self.tm_number} успешно сохранен в базу!")
+
+            # 2. Формируем финальный словарь tm_db для пайплайна
+            brand_name_lat = get_transliterated_name(brand_name_orig)
+            self.tm_db = {
+                "name": brand_name_orig,
+                "name_lat": brand_name_lat,
+                "owner_name": owner_name,
+                "mktu_descriptions": [cls["description"] for cls in self.tm_data.get("mktu_classes", [])],
+            }
+
+            print(f"Данные ТЗ: Бренд: '{brand_name_orig}', Владелец: '{owner_name}'")
+
+        finally:
+            db.close()
 
     def _generate_domains(self):
         """Шаг 1: Генерирует список потенциально нарушающих доменов."""
@@ -129,7 +185,6 @@ class TrademarkPipeline:
 
 
 if __name__ == "__main__":
-
     TM_NUMBER = "762980"
 
     pipeline = TrademarkPipeline(tm_number=TM_NUMBER)

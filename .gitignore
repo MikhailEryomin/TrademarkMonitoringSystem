@@ -3,3 +3,4 @@ core/__pycache__
 modules/__pycache__
 output/
 calibration/calibration_dataset.xlsx
+.env
