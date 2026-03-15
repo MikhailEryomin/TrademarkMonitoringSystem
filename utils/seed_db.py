@@ -9,8 +9,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core.models import SessionLocal, Owner, Trademark, TrademarkMKTUClass
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OWNERS_FILE = os.path.join(BASE_DIR, 'scripts', 'data', 'owners.csv')
-TRADEMARKS_FILE = os.path.join(BASE_DIR, 'scripts', 'data', 'trademarks.csv')
+OWNERS_FILE = os.path.join(BASE_DIR, 'utils', 'data', 'owners.csv')
+TRADEMARKS_FILE = os.path.join(BASE_DIR, 'utils', 'data', 'trademarks.csv')
 
 
 def seed_owners(session):

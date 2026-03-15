@@ -20,11 +20,13 @@ TLDS = [
 
 # Homoglyphs squatting
 HOMOGLYPHS = {
-    'a': ['а'], 'c': ['с'], 'd': ['cl'], 'e': ['е'], 'i': ['і', 'l'], 'o': ['о', '0'], 'p': ['р'],'s': ['ѕ'], 'x': ['х'], 'y': ['у'],
+    'a': ['а'], 'c': ['с'], 'd': ['cl'], 'e': ['е'], 'i': ['і', 'l'], 'o': ['о', '0'], 'p': ['р'], 's': ['ѕ'],
+    'x': ['х'], 'y': ['у'],
     'm': ['rn', 'nn'], 'w': ['vv']
 }
 
 VALID_CHARS = set(string.ascii_lowercase + string.digits + '-')
+
 
 
 # ------------------------------
@@ -37,7 +39,7 @@ INDUSTRY_MAPPING = {
     'tech': {9, 37, 38, 42},
 
     # 14 (Часы/Ювелирка) - Rolex, Cartier часто атакуют
-    'fashion': {14, 18, 25}, 
+    'fashion': {14, 18, 25},
 
     # 3 - это Chanel, Dior, L'Oreal
     'beauty': {3},
@@ -59,77 +61,84 @@ INDUSTRY_MAPPING = {
 
     # Медицина и Фарма
     'medicine': {5, 10, 44},
-    
+
     # Netflix, Skillbox, Онлайн-казино
     'media': {41},
 }
 
-
 KEYWORDS = [
     # Source from akamai analysis in 2024
     'support', 'com', 'login', 'help', 'secure', 'www', 'account',
-    'app','verify','service','us','id','jp','find','online','info',
-    'update','security','web','maps','my','alert','mail','verification',
-	'signin','auth','map','services','location','gift','accounts','live',
-	'track','m','uk','es','co','supports','findmyphone','device','fr','pay',
-	'chat','inc','log','fmi','i','nitro','center','event', 
-    #ru-segment (heuristric data or yandex wordstats source)
+    'app', 'verify', 'service', 'us', 'id', 'jp', 'find', 'online', 'info',
+    'update', 'security', 'web', 'maps', 'my', 'alert', 'mail', 'verification',
+    'signin', 'auth', 'map', 'services', 'location', 'gift', 'accounts', 'live',
+    'track', 'm', 'uk', 'es', 'co', 'supports', 'findmyphone', 'device', 'fr', 'pay',
+    'chat', 'inc', 'log', 'fmi', 'i', 'nitro', 'center', 'event',
+    # ru-segment (heuristric data or yandex wordstats source)
     'russia', 'msk', 'spb', 'krd', 'ekb', 'samara', 'nn', '77', '78', '23', '96', '63',
-    'vhod', 'kabinet', 'online', 'oficialniy', 'kupit', 'zakaz', 
-    'cena', 'otzyvy', 'moskva', 'spb', 'dostavka', 'oplata', 
-    'lk', 'bank', 'zaim', 'karta', 'bonus', 
+    'vhod', 'kabinet', 'online', 'oficialniy', 'kupit', 'zakaz',
+    'cena', 'otzyvy', 'moskva', 'spb', 'dostavka', 'oplata',
+    'lk', 'bank', 'zaim', 'karta', 'bonus',
     'invest', 'gaz', 'neft', 'shop', 'store', 'market'
+]
+
+PARKING_KEYWORDS = [
+    "domain is for sale", "buy this domain", "domain name is available",
+    "parked free", "godaddy", "dan.com", "sedo", "domain info",
+    "domain has been registered", "future home of", "сайт находится в разработке",
+    "хостинг", "домен продается", "купить этот домен", "reg.ru", "nic.ru",
+    "parking", "under construction", "coming soon", "related links"
 ]
 
 # heuristic data 
 INDUSTRY_KEYWORDS = {
 
     'tech': [
-        'support', 'service', 'login', 'account', 'cloud', 'app', 
-        'dev', 'api', 'tech', 'driver', 'soft', 'download', 
+        'support', 'service', 'login', 'account', 'cloud', 'app',
+        'dev', 'api', 'tech', 'driver', 'soft', 'download',
         'vpn', 'recovery', 'repair', 'remont', 'secure'
     ],
 
     'fashion': [
-        'outlet', 'sale', 'discount', 'replica', 'fake', 'cheap', 
-        'boutique', 'style', 'collection', 'shoes', 'bags', 'wear', 
+        'outlet', 'sale', 'discount', 'replica', 'fake', 'cheap',
+        'boutique', 'style', 'collection', 'shoes', 'bags', 'wear',
         'brand', 'official', 'stock', 'club'
     ],
 
     'beauty': [
-        'cosmetics', 'beauty', 'makeup', 'skin', 'hair', 'parfum', 
+        'cosmetics', 'beauty', 'makeup', 'skin', 'hair', 'parfum',
         'cream', 'lab', 'spa', 'shop', 'store', 'official'
     ],
 
     'food': [
-        'delivery', 'order', 'menu', 'cafe', 'pizza', 'sushi', 
-        'burger', 'kitchen', 'food', 'eda', 'rest', 'coffee', 
+        'delivery', 'order', 'menu', 'cafe', 'pizza', 'sushi',
+        'burger', 'kitchen', 'food', 'eda', 'rest', 'coffee',
         'grill', 'bar', 'bakery'
     ],
 
     'auto': [
-        'auto', 'car', 'drive', 'service', 'motors', 'parts', 
-        'salon', 'dealer', 'rent', 'taxi', 'remont', 'oil', 
+        'auto', 'car', 'drive', 'service', 'motors', 'parts',
+        'salon', 'dealer', 'rent', 'taxi', 'remont', 'oil',
         'glass', 'tyres'
     ],
 
     'finance': [
-        'bank', 'login', 'account', 'card', 'pay', 'wallet', 
-        'crypto', 'invest', 'credit', 'cash', 'money', 'secure', 
+        'bank', 'login', 'account', 'card', 'pay', 'wallet',
+        'crypto', 'invest', 'credit', 'cash', 'money', 'secure',
         'online', 'client', 'app', 'transfer'
     ],
 
     'medicine': [
-        'med', 'clinic', 'doctor', 'health', 'pharmacy', 'apteka', 
+        'med', 'clinic', 'doctor', 'health', 'pharmacy', 'apteka',
         'lab', 'test', 'drug', 'pill', 'care', 'help'
     ],
 
     'media': [
-        'play', 'watch', 'stream', 'game', 'bet', 'casino', 
+        'play', 'watch', 'stream', 'game', 'bet', 'casino',
         'study', 'course', 'school', 'live', 'video', 'news'
-    ], 
+    ],
 
-    'market' : [
+    'market': [
         'seller', 'partner', 'business', 'kabinet', 'merchant', 'login',
         'delivery', 'dostavka', 'track', 'order', 'pvz', 'post', 'express',
         'pay', 'card', 'refund', 'money', 'cash', 'vozvrat', 'oplata',

@@ -1,13 +1,25 @@
-requests
-beautifulsoup4
-aiohttp
+requests~=2.32.5
+beautifulsoup4~=4.14.3
+aiohttp~=3.13.3
 fake-useragent
-langdetect
+langdetect~=1.0.9
 
 fastapi
 uvicorn
-sqlalchemy
+sqlalchemy~=2.0.45
 psycopg2
 
-pandas
-openpyxl
+pandas~=3.0.0
+openpyxl~=3.1.5
+
+sentence-transformers
+strsimpy~=0.2.1
+scikit-learn~=1.8.0
+python-dotenv~=1.2.2
+joblib~=1.5.3
+google-genai
+transliterate~=1.10.2
+
+easyocr~=1.7.2
+pillow 
+openai~=2.26.0

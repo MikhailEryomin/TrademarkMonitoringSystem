@@ -1,0 +1,209 @@
+import json
+import time
+from dotenv import load_dotenv
+from google import genai
+from sentence_transformers import SentenceTransformer, util
+from strsimpy.levenshtein import Levenshtein
+
+load_dotenv()
+
+client = genai.Client()
+GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
+
+
+def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
+    # Убираем лишний мусор, чтобы не тратить токены
+    content = site_data.get('content_sample', '')[:1500]
+    contacts = json.dumps(site_data.get('contacts', {}), ensure_ascii=False)
+
+    return f"""
+        Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
+        Владелец ТЗ: "{owner_name}".
+
+        Данные сайта:
+        - Title: {site_data.get('title', '')}
+        - Контент: {content}
+        - Контакты: {contacts}
+
+        Определи значения следующих флагов (true или false):
+        1. "has_legal_info": Указаны ли на сайте реквизиты юридического лица (ИНН, ОГРН, название ООО/ИП)?
+        2. "owner_match": Совпадает ли найденное юридическое лицо или контакты с владельцем ТЗ "{owner_name}"?
+        3. "commercial_intent": Предлагает ли сайт товары/услуги (есть ли коммерция, цены, услуги)?
+        4. "is_review_news_site": Это агрегатор отзывов, новостной портал или информационный справочник?
+        5. "claims_official": Называет ли сайт себя "официальным", "фирменным", "авторизованным"?
+
+        Ответь СТРОГО в формате JSON без markdown-разметки.
+        Шаблон ответа:
+        {{
+            "has_legal_info": false,
+            "owner_match": false,
+            "commercial_intent": true,
+            "is_review_news_site": false,
+            "claims_official": true
+        }}
+        """
+
+
+def _query_llm(prompt: str) -> dict:
+    """Отправляет запрос в Gemini и возвращает распарсенный JSON."""
+    print("  - Отправка запроса в Gemini...")
+    try:
+        # Отправляем промпт (Gemini сам поймет системные инструкции из текста)
+        full_prompt = "Ты ИИ-юрист. Твоя задача — извлекать факты из текста сайта и возвращать их в формате JSON.\n\n" + prompt
+
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=full_prompt
+        )
+
+        # Читаем ответ и превращаем строку JSON в Python-словарь
+        return json.loads(response.text)
+
+    except Exception as e:
+        print(f"  [!] Ошибка Gemini API: {e}")
+        time.sleep(5)
+        return {
+            "has_legal_info": False,
+            "owner_match": False,
+            "commercial_intent": False,
+            "is_review_news_site": False,
+            "claims_official": False
+        }
+
+
+class FeatureExtractor:
+    def __init__(self):
+        print("Initializing FeatureExtractor...")
+
+        # 1. Инициализация метрики сходства строк
+        self.levenshtein = Levenshtein()
+
+        # 2. Инициализация BERT-модели для векторизации (Homogeneity)
+        # Используем легкую модель для русского языка, чтобы работало быстро на CPU
+        print("  - Loading BERT model (rubert-tiny2)...")
+        self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
+        print("  - Model loaded.")
+
+    def _calculate_domain_similarity(self, tm_name: str, domain: str) -> float:
+        """
+        Считает нормализованное расстояние Левенштейна (0.0 - 1.0).
+        1.0 - полное совпадение, 0.0 - ничего общего.
+        """
+        tm = tm_name.lower().strip()
+        dom = domain.lower().strip()
+
+        dist = self.levenshtein.distance(tm, dom)
+        max_len = max(len(tm), len(dom))
+
+        if max_len == 0:
+            return 0.0
+
+        similarity = 1.0 - (dist / max_len)
+        return round(similarity, 4)
+
+    def _calculate_homogeneity(self, site_text: str, mktu_descriptions: list[str]) -> float:
+        """
+        Считает семантическую близость (Cosine Similarity) между текстом сайта 
+        и описанием товаров/услуг из МКТУ.
+        """
+        if not site_text or not mktu_descriptions:
+            return 0.0
+
+        # Объединяем все описания классов МКТУ в один текст для векторизации
+        # (Можно сравнивать по отдельности и брать max, но так быстрее для начала)
+        mktu_text = " ".join(mktu_descriptions)[:1000]  # Ограничим длину
+        site_content = site_text[:1000]  # Берем только начало контента (самое важное)
+
+        # Получаем эмбеддинги
+        embeddings = self.bert_model.encode([site_content, mktu_text])
+
+        # Считаем косинусное сходство
+        cos_sim = util.cos_sim(embeddings[0], embeddings[1])
+        return round(float(cos_sim[0][0]), 4)
+
+    def analyze_site(self, site_data: dict, tm_data: dict) -> dict:
+        """
+        Главный метод. Собирает все признаки в один словарь.
+        
+        Args:
+            site_data: JSON от скрейпера (url, content_sample, is_parked...)
+            tm_data: Словарь с данными ТЗ (name, owner_name, mktu_descriptions=[...])
+        """
+        print(f"Analyzing {site_data.get('url')}...")
+
+        features = {}
+
+        # 1. Базовые признаки из скрейпера (Hard Metrics)
+        features['is_redirect'] = 1 if site_data.get('status') == 'redirect' else 0
+        features['is_parked'] = 1 if site_data.get('status') == 'parked' else 0
+        features['has_contacts_info'] = 1 if len(site_data['contacts']['inn']) > 0 or len(
+            site_data['contacts']['emails']) > 0 else 0
+
+        # 2. Сходство домена (Levenshtein)
+        domain = site_data.get('url', '').replace('https://', '').replace('http://', '').split('/')[0].split('.')[0]
+        print(f"tm_name: {tm_data['name']}, domain: {domain}")
+        features['domain_similarity'] = self._calculate_domain_similarity(tm_data['name_lat'], domain)
+
+        # Если сайт - парковка или редирект, глубокий анализ (BERT/LLM) не нужен (экономим ресурсы)
+        if features['is_parked'] or features['is_redirect']:
+            # Заполняем нулями остальные признаки
+            features.update({
+                'homogeneity_score': 0.0,
+                'has_contacts_info': 0,
+                'owner_match': 0,
+                'commercial_intent': 0,
+                'is_review_news_site': 0,
+                'claims_official': 0
+            })
+            return features
+
+        # 3. Однородность товаров (BERT)
+        features['homogeneity_score'] = self._calculate_homogeneity(
+            site_data.get('content_sample', ''),
+            tm_data.get('mktu_descriptions', [])
+        )
+
+        # 4. Логический анализ (LLM)
+        prompt = _get_llm_prompt(site_data, tm_data['name'], tm_data['owner_name'])
+
+        try:
+            llm_result = _query_llm(prompt)
+            print(f'LLM_Result: ${llm_result}')
+            # Приводим bool к int (0/1) для вектора
+            features['owner_match'] = 1 if llm_result.get('owner_match') else 0
+            features['commercial_intent'] = 1 if llm_result.get('commercial_intent') else 0
+            features['is_review_news_site'] = 1 if llm_result.get('is_review_news_site') else 0
+            features['claims_official'] = 1 if llm_result.get('claims_official') else 0
+        except Exception as e:
+            print(f"LLM Error: {e}")
+            # В случае ошибки LLM ставим безопасные значения
+            features.update({
+                'has_contacts_info': 0, 'owner_match': 0, 'commercial_intent': 0,
+                'is_review_news_site': 0, 'claims_official': 0
+            })
+
+        return features
+
+
+# Пример использования (для отладки)
+if __name__ == "__main__":
+    # Имитация данных
+    tm_mock = {
+        "name": "Adidas",
+        "owner_name": "Adidas AG",
+        "mktu_descriptions": ["Одежда, обувь, головные уборы", "Спортивные товары"]
+    }
+
+    site_mock = {
+        "url": "https://abibas-shop.ru",
+        "status": "active",
+        "title": "Купить кроссовки Абибас дешево",
+        "content_sample": "Купить озонаторы для очистки воздуха",
+        "contacts": {"phones": ["+79990000000"], "inn": ["88sd8sad8"], "emails": []}
+    }
+
+    analyzer = FeatureExtractor()
+    result_vector = analyzer.analyze_site(site_mock, tm_mock)
+
+    print("\n--- Formalized Feature Vector ---")
+    print(json.dumps(result_vector, indent=4))
