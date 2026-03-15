@@ -15,7 +15,7 @@ QWERTY_MAP = {
 # Source from APWG
 # TLD-squatting
 TLDS = [
-    'com', 'uk', 'ru', 'рф', 'su', 'info', 'net', 'live', 'link', 'org', 'xyz', 'me', 'site', 'online'
+    'com', 'ru', 'рф', 'su', 'info', 'net', 'live', 'link', 'org', 'xyz', 'me', 'site', 'online'
 ]
 
 # Homoglyphs squatting

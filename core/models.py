@@ -1,13 +1,7 @@
 from datetime import datetime
-
 from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    Date,
-    Text,
-    ForeignKey, DateTime, Boolean, Float, JSON
+    create_engine, Column, Integer, String, Date, Text, ForeignKey,
+    DateTime, Boolean, Float, JSON, Table
 )
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker
 
@@ -16,94 +10,79 @@ DATABASE_URL = "postgresql://postgres:postgres@localhost:5430/trademarks"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# ========================================================
+# НОВАЯ СВЯЗУЮЩАЯ ТАБЛИЦА (Association Table)
+# ========================================================
+trademark_mktu_association = Table(
+    'trademark_mktu_association', Base.metadata,
+    Column('trademark_id', Integer, ForeignKey('trademarks.id'), primary_key=True),
+    Column('mktu_class_id', Integer, ForeignKey('mktu_classes.id'), primary_key=True)
+)
+
 
 class Trademark(Base):
     __tablename__ = 'trademarks'
-
-    # id!!!
     id = Column(Integer, primary_key=True)
-    # Номер регистрации!!! (Может быть NULL для заявок)
     registration_number = Column(String(50), unique=True, index=True, nullable=True)
-    # Имя товарного знака!!!
     name = Column(String(255), index=True)
-    # Номер заявки
     application_number = Column(String(50), unique=True, index=True, nullable=True)
-    # Дата подачи заявки
     application_date = Column(Date, nullable=True)
-    # Дата регистрации (Может быть NULL для заявок)
     registration_date = Column(Date, nullable=True)
-    # Статус: Заявка, Действует, Недействует (истекший срок/прекратил действие)
-    status = Column(String(50), nullable=False, default='Заявка', index=True)
-    # Тип: Словесный, Изобразительный, Комбинированный
-    sign_type = Column(String(100), nullable=False)
-    # Путь к локально сохраненному файлу изображения
+    status = Column(String(200), nullable=True)
+    sign_type = Column(String(100), nullable=True)
     image_url = Column(String(512))
-
-    # --- Внешние связи ---
     owner_id = Column(Integer, ForeignKey('owners.id'), nullable=False)
 
-    # Устанавливаем связи: 
     owner = relationship("Owner", back_populates="trademarks")
-    mktu_classes = relationship("TrademarkMKTUClass", back_populates="trademark", cascade="all, delete-orphan")
+
+    # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+    # Связь "Многие-ко-многим" через нашу новую таблицу
+    mktu_classes = relationship("MKTUClass", secondary=trademark_mktu_association, back_populates="trademarks")
 
     def __repr__(self):
-        return f"<Trademark(id={self.id}, name='{self.name}', reg_num='{self.registration_number}')>"
+        return f"<Trademark(id={self.id}, name='{self.name}')>"
 
 
 class Owner(Base):
     __tablename__ = 'owners'
-
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, index=True)
-    correspondence_address = Column(Text, nullable=True)
-
-    # Устанавливаем обратную связь: у одного владельца может быть много товарных знаков.
     trademarks = relationship("Trademark", back_populates="owner")
 
     def __repr__(self):
         return f"<Owner(id={self.id}, name='{self.name}')>"
 
 
-class TrademarkMKTUClass(Base):
-    __tablename__ = 'trademark_mktu_classes'
-
+# ========================================================
+# НОВАЯ ЦЕНТРАЛЬНАЯ ТАБЛИЦА ДЛЯ КЛАССОВ МКТУ
+# ========================================================
+class MKTUClass(Base):
+    __tablename__ = 'mktu_classes'
     id = Column(Integer, primary_key=True)
-    mktu_class_number = Column(Integer, nullable=False, index=True)
+    number = Column(Integer, unique=True, nullable=False, index=True)
     description = Column(Text, nullable=False)
 
-    trademark_id = Column(Integer, ForeignKey('trademarks.id'), nullable=False)
-
-    trademark = relationship("Trademark", back_populates="mktu_classes")
+    trademarks = relationship("Trademark", secondary=trademark_mktu_association, back_populates="mktu_classes")
 
     def __repr__(self):
-        return f"<MKTUClass(class={self.mktu_class_number}, trademark_id={self.trademark_id})>"
+        return f"<MKTUClass(number={self.number})>"
 
 
 class ScanResult(Base):
+    # ... (эта модель остается без изменений) ...
     __tablename__ = 'scan_results'
-
     id = Column(Integer, primary_key=True)
-    trademark_id = Column(Integer, ForeignKey('trademarks.id'))
-    domain_name = Column(String(255), index=True)
-    scan_date = Column(DateTime, default=datetime.now())
-
-    # Raw Data from Scraper
-    url = Column(String)
-    http_status = Column(Integer)
-    is_parked = Column(Boolean, default=False)
-
-    # Calculated Features
-    domain_similarity = Column(Float)  # Левенштейн
-    content_homogeneity = Column(Float)  # Косинусное сходство векторов
-
-    # LLM Extracted Features
-    llm_verdict_json = Column(JSON)  # Ответ от LLM
-
-    # Final Classification
-    predicted_category = Column(String(50))  # Legal, Infringement...
-    is_confirmed = Column(Boolean, default=False)  # Флаг проверки человеком
-
+    trademark_id = Column(Integer, ForeignKey('trademarks.id'), nullable=False)
+    domain_name = Column(String(255), index=True, nullable=False)
+    url = Column(String(512), nullable=False)
+    scan_date = Column(DateTime, default=datetime.now)
+    features = Column(JSON, nullable=False)
+    predicted_category = Column(String(50), nullable=False)
+    confidence = Column(Float, nullable=True)
     trademark = relationship("Trademark")
+
+    def __repr__(self):
+        return f"<ScanResult(domain='{self.domain_name}', category='{self.predicted_category}')>"
 
 
 def create_db_and_tables():

@@ -108,7 +108,7 @@ class TrademarkClassifier:
         probabilities = self.model.predict_proba(vector)[0]
         
         predicted_label = self.inv_label_map[prediction_idx]
-        confidence = round(probabilities[prediction_idx], 2)
+        confidence = float(round(probabilities[prediction_idx], 2))
 
         return {
             'class': predicted_label,
