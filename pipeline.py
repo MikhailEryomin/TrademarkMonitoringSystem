@@ -1,16 +1,31 @@
+import asyncio
+
 from modules.generator import generate_domains
-from modules.scraper import start as start_scrapper
+from modules.scraper import AsyncScraper
 from modules.analyzer import FeatureExtractor
 from modules.classifier import TrademarkClassifier
 from modules.tm_parser import TrademarkParser
 from modules.reporter import Reporter
+import socket, aiohttp
 import json  # debug
+
+
+def silence_event_loop_exceptions(loop, context):
+    """Глушит системный спам об ошибках DNS для несуществующих доменов."""
+    exception = context.get('exception')
+    if isinstance(exception, (socket.gaierror, aiohttp.ClientConnectorError)):
+        return
+    msg = context.get('message', '')
+    if "getaddrinfo failed" in str(msg) or "getaddrinfo failed" in str(exception):
+        return
+    loop.default_exception_handler(context)
 
 
 class TrademarkPipeline:
     """
     Класс-оркестратор для управления полным циклом поиска и анализа нарушений товарного знака.
     """
+    DEFAULT_SCRAPER_LIMIT = 200
 
     def __init__(self, tm_number: str):
         self.tm_number = tm_number
@@ -22,6 +37,7 @@ class TrademarkPipeline:
 
         # Инициализация модулей
         self.parser = TrademarkParser()
+        self.scraper = AsyncScraper()
         self.analyzer = FeatureExtractor()
         self.classifier = TrademarkClassifier()
         self.reporter = Reporter()
@@ -44,12 +60,12 @@ class TrademarkPipeline:
         self.domains = generate_domains(brand_for_domains, self.tm_db["mktu_nums"])
         print(f"Generated {len(self.domains)} domains total.")
 
-    def _scrape_domains(self, limit=500):
+    async def _scrape_domains(self, limit=500):
         """Шаг 2: Проверяет домены и собирает данные с 'живых' сайтов."""
         test_domains = list(self.domains)[:limit]
         print(f"\n--- 2. Scraping ({len(test_domains)} domains) ---")
 
-        self.scraped_data = start_scrapper(self.tm_db["name_lat"], test_domains)
+        self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
         print(f"Scraped {len(self.scraped_data)} active/parked sites.")
 
     def _analyze_sites(self):
@@ -95,20 +111,20 @@ class TrademarkPipeline:
             predictions=self.predictions
         )
 
-    def run(self):
+    async def run(self):
         """Главный метод запуска пайплайна."""
         self._parse_trademark()
         self._generate_domains()
-        self._scrape_domains(limit=LIMIT)
+        await self._scrape_domains(limit=self.DEFAULT_SCRAPER_LIMIT)
         self._analyze_sites()
         self._classify_sites()
         self._report_results()
 
 
 if __name__ == "__main__":
-    #TM_NUMBER = "762980" #СБЕР
-    TM_NUMBER = "752380" #OZON
-    LIMIT = 200
+    # TM_NUMBER = "762980" #СБЕР
+    TM_NUMBER = "752380"  # OZON
+    LIMIT = 500
 
     pipeline = TrademarkPipeline(tm_number=TM_NUMBER)
-    pipeline.run()
+    asyncio.run(pipeline.run())

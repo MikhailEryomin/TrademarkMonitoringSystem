@@ -217,38 +217,3 @@ class AsyncScraper:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
         print(f"Data saved to {output_file}")
-
-
-# ==========================================
-# EVENT LOOP RUNNER WRAPPERS
-# ==========================================
-
-def start(brandname: str, domains: List[str]) -> List[Dict]:
-    """
-    Точка входа для синхронного запуска скрейпера (создает свой event loop).
-    """
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.set_exception_handler(silence_event_loop_exceptions)
-
-    async_scraper = AsyncScraper()
-    try:
-        results = loop.run_until_complete(async_scraper.run(brandname, domains))
-    finally:
-        loop.close()
-
-    return results
-
-
-def silence_event_loop_exceptions(loop, context):
-    """Глушит системный спам об ошибках DNS для несуществующих доменов."""
-    exception = context.get('exception')
-
-    if isinstance(exception, (socket.gaierror, aiohttp.ClientConnectorError)):
-        return
-
-    msg = context.get('message')
-    if "getaddrinfo failed" in str(msg) or "getaddrinfo failed" in str(exception):
-        return
-
-    loop.default_exception_handler(context)
