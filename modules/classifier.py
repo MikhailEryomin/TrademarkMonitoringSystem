@@ -6,12 +6,13 @@ from sklearn.ensemble import RandomForestClassifier
 # Путь для сохранения обученной модели
 MODEL_PATH = 'core/model_dump.pkl'
 
+
 class TrademarkClassifier:
     def __init__(self):
         # Используем Случайный Лес: надежный алгоритм для задач классификации
         self.model = RandomForestClassifier(n_estimators=100, random_state=42)
         self.is_trained = False
-        
+
         # Порядок признаков ОЧЕНЬ важен. Он должен быть одинаковым при обучении и прогнозе.
         self.feature_order = [
             'domain_similarity',
@@ -24,7 +25,7 @@ class TrademarkClassifier:
             'is_review_news_site',
             'claims_official'
         ]
-        
+
         # Маппинг классов (Текстовая метка -> Число)
         self.label_map = {
             'Легальный': 0,
@@ -50,11 +51,18 @@ class TrademarkClassifier:
         # Правило 1: Если найден ИНН или контакты владельца — это точно Легальный
         if features.get('owner_match') == 1:
             return 'Легальный'
-        
+
         # Правило 2: Если скрейпер нашел признаки парковки — это Парковка
         if features.get('is_parked') == 1:
             return 'Парковка'
-            
+
+        if features.get("domain_similarity") > 0.7 and features.get("commercial_intent") == 1 and features.get(
+                "owner_match") == 0:
+            return "Нарушение"
+
+        if features.get("is_review_news_site") == 1:
+            return "Легальный"
+
         # Правило 3: Если это редирект на казино/беттинг (нужна доп. логика в анализаторе)
         # но пока просто редирект без совпадения владельца — подозрительно
         if features.get('is_redirect') == 1 and features.get('owner_match') == 0:
@@ -69,18 +77,18 @@ class TrademarkClassifier:
         y_labels: список правильных ответов ('Легальный', 'Нарушение'...)
         """
         print("Starting training...")
-        
+
         # 1. Подготовка данных
         X = [self._dict_to_vector(f) for f in X_dicts]
-        y = [self.label_map.get(label, 2) for label in y_labels] # 2 (Подозрительный) по умолчанию
+        y = [self.label_map.get(label, 2) for label in y_labels]  # 2 (Подозрительный) по умолчанию
 
         # 2. Обучение
         # (В реальной задаче тут можно сделать разбивку на train/test)
         self.model.fit(X, y)
         self.is_trained = True
-        
+
         print("Model trained successfully.")
-        
+
         # 3. Сохранение
         joblib.dump(self.model, MODEL_PATH)
         print(f"Model saved to {MODEL_PATH}")
@@ -106,7 +114,7 @@ class TrademarkClassifier:
         vector = [self._dict_to_vector(feature_dict)]
         prediction_idx = self.model.predict(vector)[0]
         probabilities = self.model.predict_proba(vector)[0]
-        
+
         predicted_label = self.inv_label_map[prediction_idx]
         confidence = float(round(probabilities[prediction_idx], 2))
 
@@ -124,21 +132,22 @@ class TrademarkClassifier:
         except Exception:
             print("No saved model found.")
 
+
 # Пример использования
 if __name__ == "__main__":
     clf = TrademarkClassifier()
-    
+
     # 1. Имитация данных для обучения (как будто мы прогнали Датасет через Analyzer)
     training_features = [
-        {'domain_similarity': 1.0, 'homogeneity_score': 0.1, 'owner_match': 1}, # Легальный
-        {'domain_similarity': 0.8, 'homogeneity_score': 0.9, 'commercial_intent': 1, 'owner_match': 0}, # Нарушение
-        {'is_parked': 1, 'domain_similarity': 0.6} # Парковка
+        {'domain_similarity': 1.0, 'homogeneity_score': 0.1, 'owner_match': 1},  # Легальный
+        {'domain_similarity': 0.8, 'homogeneity_score': 0.9, 'commercial_intent': 1, 'owner_match': 0},  # Нарушение
+        {'is_parked': 1, 'domain_similarity': 0.6}  # Парковка
     ]
     training_labels = ['Легальный', 'Нарушение', 'Парковка']
-    
+
     # Обучаем
     clf.train(training_features, training_labels)
-    
+
     # 2. Прогноз нового сайта
     new_site_features = {
         'domain_similarity': 0.75,
@@ -146,12 +155,12 @@ if __name__ == "__main__":
         'is_redirect': 0,
         'is_parked': 0,
         'has_legal_info': 0,
-        'owner_match': 0,       # Владелец не совпал
-        'commercial_intent': 1, # Продает товары
+        'owner_match': 0,  # Владелец не совпал
+        'commercial_intent': 1,  # Продает товары
         'is_review_news_site': 0,
-        'claims_official': 1    # Врет, что официальный
+        'claims_official': 1  # Врет, что официальный
     }
-    
+
     result = clf.predict(new_site_features)
     print("\n--- Prediction Result ---")
     print(result)

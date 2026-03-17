@@ -1,5 +1,6 @@
-# api.py
-import asyncio
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -57,11 +58,15 @@ class ScanResultResponse(BaseModel):
 # ==========================================
 # Эндпоинты
 # ==========================================
+if not os.path.exists("static"):
+    os.makedirs("static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/")
 def read_root():
-    """Проверка работоспособности API."""
-    return {"status": "ok", "message": "Trademark Monitoring API is running"}
+    """Отдает главную HTML-страницу."""
+    return FileResponse("static/index.html")
 
 
 @app.get("/api/trademarks", response_model=List[TrademarkResponse])
@@ -120,7 +125,7 @@ async def run_pipeline_task(tm_number: str):
 
     try:
         pipeline = TrademarkPipeline(tm_number=tm_number, )
-        await pipeline.run() # Просто await, без создания новых лупов!
+        await pipeline.run()  # Просто await, без создания новых лупов!
     except Exception as e:
         print(f"[!] Ошибка при фоновом выполнении пайплайна для ТЗ {tm_number}: {e}")
 
