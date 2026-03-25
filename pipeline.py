@@ -27,8 +27,14 @@ class TrademarkPipeline:
     """
     DEFAULT_SCRAPER_LIMIT = 200
 
-    def __init__(self, tm_number: str):
+    def _update_status(self, stage: str, status: str):
+        """Вспомогательный метод для отправки статуса"""
+        if self.status_callback:
+            self.status_callback(stage, status)
+
+    def __init__(self, tm_number: str, status_callback=None):
         self.tm_number = tm_number
+        self.status_callback = status_callback
         self.tm_db = {}
         self.domains = []
         self.scraped_data = []
@@ -112,13 +118,30 @@ class TrademarkPipeline:
         )
 
     async def run(self):
-        """Главный метод запуска пайплайна."""
+        """Главный метод запуска пайплайна с отслеживанием статусов."""
+        self._update_status("parsing", "running")
         self._parse_trademark()
+        self._update_status("parsing", "done")
+
+        self._update_status("generating", "running")
         self._generate_domains()
+        self._update_status("generating", "done")
+
+        self._update_status("scraping", "running")
         await self._scrape_domains(limit=self.DEFAULT_SCRAPER_LIMIT)
+        self._update_status("scraping", "done")
+
+        self._update_status("analyzing", "running")
         self._analyze_sites()
+        self._update_status("analyzing", "done")
+
+        self._update_status("classifying", "running")
         self._classify_sites()
+        self._update_status("classifying", "done")
+
+        self._update_status("reporting", "running")
         self._report_results()
+        self._update_status("reporting", "done")
 
 
 if __name__ == "__main__":

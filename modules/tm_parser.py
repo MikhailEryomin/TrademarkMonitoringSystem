@@ -181,6 +181,7 @@ class TrademarkParser:
             if cached_tm:
                 print(f"[*] Знак №{mark_number} найден в базе (КЭШ)! Пропускаем запрос к ФИПС.")
                 brand_name_orig = cached_tm.name or "unknown"
+                logo_url = cached_tm.image_url or "undefined"
                 owner_name = cached_tm.owner.name if cached_tm.owner else "Unknown Owner"
 
                 # Достаем классы из БД
@@ -200,6 +201,7 @@ class TrademarkParser:
                 application_date_string = tm_data.get("application_date")
                 application_number = tm_data.get("application_number")
                 tm_status = tm_data.get("status")
+                logo_url = tm_data.get("image_url")
 
                 # Сохраняем в БД
                 owner = db.query(Owner).filter_by(name=owner_name).first()
@@ -215,7 +217,7 @@ class TrademarkParser:
                     status=tm_status,
                     name=brand_name_orig,
                     sign_type=tm_data.get("sign_type", "Комбинированный"),
-                    image_url=tm_data.get("image_url"),
+                    image_url=logo_url,
                     owner=owner
                 )
 
@@ -240,6 +242,7 @@ class TrademarkParser:
             return {
                 "name": brand_name_orig,
                 "name_lat": brand_name_lat,
+                "logo_url": logo_url,
                 "owner_name": owner_name,
                 "mktu_descriptions": [cls["description"] for cls in mktu_classes],
                 "mktu_nums": [cls["number"] for cls in mktu_classes]

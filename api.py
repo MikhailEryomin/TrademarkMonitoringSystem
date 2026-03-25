@@ -9,12 +9,13 @@ from datetime import datetime
 
 from core.models import SessionLocal, Trademark, ScanResult
 from pipeline import TrademarkPipeline
+from modules.tm_parser import TrademarkParser
 
 # Инициализируем приложение FastAPI
 app = FastAPI(
     title="Trademark Monitoring API",
     description="API для системы мониторинга нарушений товарных знаков",
-    version="1.0.0"
+    version="1.1.0"
 )
 
 # Настраиваем CORS (чтобы фронтенд мог делать запросы с любого порта)
@@ -56,6 +57,22 @@ class ScanResultResponse(BaseModel):
 
 
 # ==========================================
+# Глобальное состояние системы (для блокировки и UI)
+# ==========================================
+scan_state = {
+    "is_running": False,
+    "current_tm": None,
+    "stages": {
+        "parsing": "pending",
+        "generating": "pending",
+        "scraping": "pending",
+        "analyzing": "pending",
+        "classifying": "pending",
+        "reporting": "pending"
+    }
+}
+
+# ==========================================
 # Эндпоинты
 # ==========================================
 if not os.path.exists("static"):
@@ -67,6 +84,24 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def read_root():
     """Отдает главную HTML-страницу."""
     return FileResponse("static/index.html")
+
+
+@app.get("/api/trademark/{tm_number}")
+def get_tm_info(tm_number: str):
+    """Предварительный парсинг ТЗ для показа пользователю перед сканированием."""
+    parser = TrademarkParser()
+    try:
+        # Используем твой готовый метод кэш/парсинга
+        tm_data = parser.get_or_fetch_trademark(tm_number)
+        return tm_data
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Ошибка поиска ТЗ: {str(e)}")
+
+
+@app.get("/api/status")
+def get_scan_status():
+    """Отдает текущий статус запущенного пайплайна."""
+    return scan_state
 
 
 @app.get("/api/trademarks", response_model=List[TrademarkResponse])
@@ -123,11 +158,22 @@ async def run_pipeline_task(tm_number: str):
     Асинхронная задача для запуска пайплайна в фоне.
     """
 
+    scan_state["is_running"] = True
+    scan_state["current_tm"] = tm_number
+
+    for key in scan_state["stages"]:
+        scan_state["stages"][key] = "pending"
+
+    def update_callback(stage: str, status: str):
+        scan_state["stages"][stage] = status
+
     try:
-        pipeline = TrademarkPipeline(tm_number=tm_number, )
-        await pipeline.run()  # Просто await, без создания новых лупов!
+        pipeline = TrademarkPipeline(tm_number=tm_number, status_callback=update_callback)
+        await pipeline.run()
     except Exception as e:
         print(f"[!] Ошибка при фоновом выполнении пайплайна для ТЗ {tm_number}: {e}")
+    finally:
+        scan_state["is_running"] = False
 
 
 @app.post("/api/scan/{tm_number}")
