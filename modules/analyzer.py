@@ -12,36 +12,39 @@ GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
 
 
 def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
-    # Убираем лишний мусор, чтобы не тратить токены
     content = site_data.get('content_sample', '')[:1500]
     contacts = json.dumps(site_data.get('contacts', {}), ensure_ascii=False)
 
     return f"""
-        Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
-        Владелец ТЗ: "{owner_name}".
+            Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
+            Владелец ТЗ: "{owner_name}".
 
-        Данные сайта:
-        - Title: {site_data.get('title', '')}
-        - Контент: {content}
-        - Контакты: {contacts}
+            Данные сайта:
+            - Title: {site_data.get('title', '')}
+            - Контент: {content}
+            - Контакты: {contacts}
 
-        Определи значения следующих флагов (true или false):
-        1. "has_legal_info": Указаны ли на сайте реквизиты юридического лица (ИНН, ОГРН, название ООО/ИП)?
-        2. "owner_match": Совпадает ли найденное юридическое лицо или контакты с владельцем ТЗ "{owner_name}"?
-        3. "commercial_intent": Предлагает ли сайт товары/услуги (есть ли коммерция, цены, услуги)?
-        4. "is_review_news_site": Это агрегатор отзывов, новостной портал или информационный справочник?
-        5. "claims_official": Называет ли сайт себя "официальным", "фирменным", "авторизованным"?
+            Определи значения следующих флагов (true или false):
+            1. "has_legal_info": Указаны ли ИНН, ОГРН или точное название юрлица?
+            2. "has_physical_address": Указан ли реальный физический адрес (улица, дом)?
+            3. "owner_match": Совпадает ли юрлицо с владельцем ТЗ "{owner_name}"?
+            4. "commercial_intent": Это коммерческий сайт (продажа товаров/услуг)?
+            5. "is_marketplace": Это крупный магазин, продающий МНОЖЕСТВО разных брендов (как Ozon, Wildberries, DNS), а не только "{tm_name}"?
+            6. "is_review_news_site": Это настоящий новостной портал или сайт отзывов?
+            7. "is_fake_aggregator": Мимикрирует ли сайт под новости/отзывы, но на самом деле агрессивно перенаправляет на покупку товаров "{tm_name}"?
 
-        Ответь СТРОГО в формате JSON без markdown-разметки.
-        Шаблон ответа:
-        {{
-            "has_legal_info": false,
-            "owner_match": false,
-            "commercial_intent": true,
-            "is_review_news_site": false,
-            "claims_official": true
-        }}
-        """
+            Ответь СТРОГО в формате JSON без markdown-разметки.
+            Шаблон ответа:
+            {{
+                "has_legal_info": false,
+                "has_physical_address": false,
+                "owner_match": false,
+                "commercial_intent": true,
+                "is_marketplace": false,
+                "is_review_news_site": false,
+                "is_fake_aggregator": false
+            }}
+            """
 
 
 def _query_llm(prompt: str) -> dict:
@@ -170,16 +173,19 @@ class FeatureExtractor:
             llm_result = _query_llm(prompt)
             print(f'LLM_Result: ${llm_result}')
             # Приводим bool к int (0/1) для вектора
+            features['has_legal_info'] = 1 if llm_result.get('has_legal_info') else 0
+            features['has_physical_address'] = 1 if llm_result.get('has_physical_address') else 0
             features['owner_match'] = 1 if llm_result.get('owner_match') else 0
             features['commercial_intent'] = 1 if llm_result.get('commercial_intent') else 0
+            features['is_marketplace'] = 1 if llm_result.get('is_marketplace') else 0
             features['is_review_news_site'] = 1 if llm_result.get('is_review_news_site') else 0
-            features['claims_official'] = 1 if llm_result.get('claims_official') else 0
+            features['is_fake_agregator'] = 1 if llm_result.get('is_fake_agregator') else 0
+
         except Exception as e:
             print(f"LLM Error: {e}")
-            # В случае ошибки LLM ставим безопасные значения
             features.update({
-                'has_contacts_info': 0, 'owner_match': 0, 'commercial_intent': 0,
-                'is_review_news_site': 0, 'claims_official': 0
+                'has_legal_info': 0, 'has_physical_address': 0, 'owner_match': 0,  'commercial_intent': 0,
+                'is_marketplace': 0, 'is_review_news_site': 0, 'is_fake_agregator': 0
             })
 
         return features
