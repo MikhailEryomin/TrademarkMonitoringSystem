@@ -15,17 +15,11 @@ class TrademarkClassifier:
 
         # Порядок признаков ОЧЕНЬ важен. Он должен быть одинаковым при обучении и прогнозе.
         self.feature_order = [
-            'domain_similarity',
-            'homogeneity_score',
-            'is_redirect',
-            'is_parked',
-            'has_legal_info',
-            'owner_match',
-            'commercial_intent',
-            'is_review_news_site',
-            'claims_official'
+            'domain_similarity', 'homogeneity_score', 'is_redirect', 'is_parked',
+            'has_contacts_info', 'has_legal_info', 'has_physical_address',
+            'owner_match', 'commercial_intent', 'is_marketplace',
+            'is_review_news_site', 'is_fake_aggregator'
         ]
-
         # Маппинг классов (Текстовая метка -> Число)
         self.label_map = {
             'Легальный': 0,
@@ -45,29 +39,40 @@ class TrademarkClassifier:
 
     def _apply_heuristics(self, features: dict) -> str | None:
         """
-        Жесткие правила (Эвристики). 
-        Если правило срабатывает, возвращаем класс сразу, не спрашивая ML-модель.
+        Реализация бизнес-логики проверки (на основе документа заказчика от 16.03.2026).
         """
-        # Правило 1: Если найден ИНН или контакты владельца — это точно Легальный
+
+        # П. 2.4: Фейковый агрегатор / Перенаправление на продажу -> Нарушение
+        if features.get('is_fake_aggregator') == 1:
+            return 'Нарушение'
+
+        # П. 1.1.1: Домен принадлежит правообладателю (совпал ИНН/Владелец) -> Легальный
         if features.get('owner_match') == 1:
             return 'Легальный'
 
-        # Правило 2: Если скрейпер нашел признаки парковки — это Парковка
-        if features.get('is_parked') == 1:
-            return 'Парковка'
+        # П. 2.3: Настоящий новостной портал или агрегатор отзывов -> Легальный
+        if features.get('is_review_news_site') == 1 and features.get('commercial_intent') == 0:
+            return 'Легальный'
 
-        if features.get("domain_similarity") > 0.7 and features.get("commercial_intent") == 1 and features.get(
-                "owner_match") == 0:
-            return "Нарушение"
+        # П. 2.2 (Дефис 2): Продает множество брендов (Маркетплейс) -> Легальный
+        if features.get('is_marketplace') == 1:
+            return 'Легальный'
 
-        if features.get("is_review_news_site") == 1:
-            return "Легальный"
+        # --- БЛОК АНАЛИЗА НАРУШЕНИЙ (Сайт коммерческий и однородный) ---
+        if features.get('commercial_intent') == 1 and features.get('homogeneity_score', 0) > 0.5:
 
-        # Правило 3: Если это редирект на казино/беттинг (нужна доп. логика в анализаторе)
-        # но пока просто редирект без совпадения владельца — подозрительно
-        if features.get('is_redirect') == 1 and features.get('owner_match') == 0:
-            return 'Подозрительный'
+            # П. 1.1.2: Нет юр. информации, нет адреса или нет контактов -> Нарушение
+            has_info = features.get('has_legal_info') == 1 and features.get('has_physical_address') == 1
+            if not has_info:
+                if features.get('domain_similarity', 0) > 0.5:
+                    return 'Нарушение'  # Косит под бренд и скрывает данные
 
+            # П. 2.2 (Дефис 3): Свой домен (не похож), но продает ТОЛЬКО этот бренд -> Подозрительный
+            if features.get('domain_similarity', 0) < 0.3 and features.get('is_marketplace') == 0:
+                return 'Подозрительный'
+
+        # Если ни одно жесткое правило не сработало, возвращаем None.
+        # Дальше решение примет обученный RandomForest.
         return None
 
     def train(self, X_dicts: list[dict], y_labels: list[str]):
