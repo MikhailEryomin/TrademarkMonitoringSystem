@@ -9,7 +9,7 @@ class Reporter:
     и вывод итогового отчета.
     """
 
-    def report_results(self, tm_number: str, feature_vectors: list, predictions: list):
+    def report_results(self, tm_number: str, analyzed_data: list, predictions: list):
         """
         Главный метод: выводит отчет в консоль и сохраняет данные в PostgreSQL.
         """
@@ -24,14 +24,15 @@ class Reporter:
                 tm = db.query(Trademark).filter_by(registration_number=tm_number).one()
 
                 for i, prediction in enumerate(predictions):
-                    features = feature_vectors[i]
-                    url = features['url']
+                    site_data = analyzed_data[i]
+                    url = site_data['url']
+                    features = site_data['features']
 
                     # --- Сохранение/Обновление в БД ---
-                    self._save_or_update_scan_result(db, tm.id, features, prediction)
+                    self._save_or_update_scan_result(db, tm.id, url, features, prediction)
 
                     # --- Вывод в консоль ---
-                    self._print_result(features, prediction)
+                    self._print_result(url, features, prediction)
 
                 db.commit()
                 print(f"\n[+] Сохранено/обновлено {len(predictions)} результатов в базе данных.")
@@ -40,8 +41,7 @@ class Reporter:
                 print(f"[!] Ошибка при сохранении результатов в БД: {e}")
                 db.rollback()
 
-    def _save_or_update_scan_result(self, db, trademark_id: int, features: dict, prediction: dict):
-        url = features['url']
+    def _save_or_update_scan_result(self, db, trademark_id: int, url: str, features: dict, prediction: dict):
         domain = url.replace('https://', '').replace('http://', '').split('/')[0]
 
         existing_scan = db.query(ScanResult).filter_by(trademark_id=trademark_id, url=url).first()
@@ -49,7 +49,7 @@ class Reporter:
         if existing_scan:
             # Обновляем запись
             existing_scan.scan_date = datetime.now()
-            existing_scan.features = features # Просто перезаписываем JSON
+            existing_scan.features = features  # Просто перезаписываем JSON
             existing_scan.predicted_category = prediction['class']
             existing_scan.confidence = prediction['confidence']
         else:
@@ -58,19 +58,14 @@ class Reporter:
                 trademark_id=trademark_id,
                 url=url,
                 domain_name=domain,
-                features=features, # Сохраняем весь словарь разом!
+                features=features,  # Сохраняем весь словарь разом!
                 predicted_category=prediction['class'],
                 confidence=prediction['confidence']
             )
             db.add(new_scan)
 
-    def _print_result(self, features: dict, prediction: dict):
-        """Форматирует и выводит результат для одного сайта в консоль."""
-        print(f"URL: {features['url']}")
+    def _print_result(self, url: str, features: dict, prediction: dict):
+        print(f"URL: {url}")
         print(f"  -> Вердикт: {prediction['class']} (Уверенность: {prediction['confidence']})")
-        print(f"  -> Признаки:")
-        print(f"     * Domain Sim: {features.get('domain_similarity', 0):.2f}")
-        print(f"     * Homogeneity: {features.get('homogeneity_score', 0):.2f}")
-        print(f"     * Owner Match: {features.get('owner_match', 0)}")
-        print(f"     * Commercial:  {features.get('commercial_intent', 0)}")
+        print(f"  -> Признаки: {features}")
         print("-" * 45)

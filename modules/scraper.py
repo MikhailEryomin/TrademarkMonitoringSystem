@@ -156,7 +156,7 @@ class AsyncScraper:
 
         return {
             "url": url,
-            "status": "alive",
+            "status": "active",
             "language": language,
             "title": title.strip() if title else "",
             "description": description.strip() if description else "",

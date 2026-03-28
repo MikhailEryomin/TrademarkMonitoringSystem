@@ -1,14 +1,11 @@
 import json
 import time
 from dotenv import load_dotenv
-from google import genai
+from modules.LLM import query
 from sentence_transformers import SentenceTransformer, util
 from strsimpy.levenshtein import Levenshtein
 
 load_dotenv()
-
-client = genai.Client()
-GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
 
 
 def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
@@ -25,8 +22,8 @@ def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
             - Контакты: {contacts}
 
             Определи значения следующих флагов (true или false):
-            1. "has_legal_info": Указаны ли ИНН, ОГРН или точное название юрлица?
-            2. "has_physical_address": Указан ли реальный физический адрес (улица, дом)?
+            1. "has_legal_info": Указаны ли реквизиты юридического лица (ИНН, ОГРН) ИЛИ официальное юридическое наименование компании (например, ООО, ПАО, Inc., Ltd., Joint-Stock Company)?
+            2. "has_physical_address": Указан ли реальный физический адрес компании на любом языке (улица, дом, город, например: "St.", "Ave", "ул.")?
             3. "owner_match": Совпадает ли юрлицо с владельцем ТЗ "{owner_name}"?
             4. "commercial_intent": Это коммерческий сайт (продажа товаров/услуг)?
             5. "is_marketplace": Это крупный магазин, продающий МНОЖЕСТВО разных брендов (как Ozon, Wildberries, DNS), а не только "{tm_name}"?
@@ -48,18 +45,13 @@ def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
 
 
 def _query_llm(prompt: str) -> dict:
-    """Отправляет запрос в Gemini и возвращает распарсенный JSON."""
-    print("  - Отправка запроса в Gemini...")
+    """Отправляет запрос в LLM и возвращает распарсенный JSON."""
+    print("  - Отправка запроса в LLM...")
     try:
-        # Отправляем промпт (Gemini сам поймет системные инструкции из текста)
         full_prompt = "Ты ИИ-юрист. Твоя задача — извлекать факты из текста сайта и возвращать их в формате JSON.\n\n" + prompt
 
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=full_prompt
-        )
+        response = query(full_prompt)
 
-        # Читаем ответ и превращаем строку JSON в Python-словарь
         return json.loads(response.text)
 
     except Exception as e:
@@ -139,11 +131,12 @@ class FeatureExtractor:
         # 1. Базовые признаки из скрейпера (Hard Metrics)
         features['is_redirect'] = 1 if site_data.get('status') == 'redirect' else 0
         features['is_parked'] = 1 if site_data.get('status') == 'parked' else 0
-        features['has_contacts_info'] = 1 if len(site_data['contacts']['inn']) > 0 or len(
-            site_data['contacts']['emails']) > 0 else 0
+        features['has_contacts_info'] = 1 if any(site_data.get('contacts', {}).values()) else 0
 
         # 2. Сходство домена (Levenshtein)
-        domain = site_data.get('url', '').replace('https://', '').replace('http://', '').split('/')[0].split('.')[0]
+        url = site_data.get('url', '')
+        clean_url = url.split('://')[-1].replace('www.', '').split('/')[0]
+        domain = clean_url.split('.')[0]
         print(f"tm_name: {tm_data['name']}, domain: {domain}")
         features['domain_similarity'] = self._calculate_domain_similarity(tm_data['name_lat'], domain)
 
@@ -170,9 +163,10 @@ class FeatureExtractor:
         prompt = _get_llm_prompt(site_data, tm_data['name'], tm_data['owner_name'])
 
         try:
-            llm_result = _query_llm(prompt)
+            llm_json_result = _query_llm(prompt)
+            llm_message = llm_json_result['choices'][0]['message']['content']
+            llm_result = json.loads(llm_message)
             print(f'LLM_Result: ${llm_result}')
-            # Приводим bool к int (0/1) для вектора
             features['has_legal_info'] = 1 if llm_result.get('has_legal_info') else 0
             features['has_physical_address'] = 1 if llm_result.get('has_physical_address') else 0
             features['owner_match'] = 1 if llm_result.get('owner_match') else 0

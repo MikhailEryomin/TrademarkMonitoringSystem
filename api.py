@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 import os
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -15,7 +15,7 @@ from modules.tm_parser import TrademarkParser
 app = FastAPI(
     title="Trademark Monitoring API",
     description="API для системы мониторинга нарушений товарных знаков",
-    version="1.1.0"
+    version="1.2.0"
 )
 
 # Настраиваем CORS (чтобы фронтенд мог делать запросы с любого порта)
@@ -37,8 +37,7 @@ class TrademarkResponse(BaseModel):
     owner_name: str
     status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ScanResultResponse(BaseModel):
@@ -52,8 +51,7 @@ class ScanResultResponse(BaseModel):
     domain_similarity: Optional[float]
     content_homogeneity: Optional[float]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ==========================================

@@ -102,10 +102,11 @@
                     <table class="table table-hover align-middle" id="currentResultsTable">
                         <thead class="table-light">
                             <tr>
-                                <th>Домен</th>
+                                <th>ID</th>
                                 <th>URL</th>
-                                <th>Категория</th>
+                                <th>Вердикт</th>
                                 <th>Уверенность</th>
+                                <th>Детали</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -156,201 +157,34 @@
     </div>
 </div>
 
-<script>
-    const API_BASE_URL = "http://localhost:8000/api";
-    let pollInterval = null;
-    let currentScannedTM = null;
+<!-- Модальное окно для деталей -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="modalDomainTitle">Детали анализа</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
 
-    // --- ФУНКЦИИ ВКЛАДКИ СКАНИРОВАНИЯ ---
+        <!-- Блок OSINT -->
+        <h6 class="text-primary border-bottom pb-2">🔍 OSINT & Контакты</h6>
+        <div class="mb-3" id="modalOsintContent">
+            <!-- Сюда JS вставит телефоны и ИНН -->
+        </div>
 
-    async function fetchTMInfo() {
-        const tmNumber = document.getElementById('tmInputScan').value.trim();
-        if (!tmNumber) return alert("Введите номер ТЗ");
+        <!-- Блок ML & Features -->
+        <h6 class="text-primary border-bottom pb-2 mt-4">🤖 Признаки (ML & LLM)</h6>
+        <div class="mb-3">
+            <pre><code id="modalFeaturesJson" class="bg-light p-2 d-block rounded" style="font-size: 14px;"></code></pre>
+        </div>
 
-        const btn = document.getElementById('btnFindTM');
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Ищем...`;
-        btn.disabled = true;
+      </div>
+    </div>
+  </div>
+</div>
 
-        try {
-            const res = await fetch(`${API_BASE_URL}/trademark/${tmNumber}`);
-            if (!res.ok) throw new Error("ТЗ не найден или ошибка сервера");
-            const data = await res.json();
-
-            // Заполняем карточку
-            document.getElementById('tmLogo').src = data.logo_url;
-            document.getElementById('tmName').innerText = `${data.name} (${data.name_lat})`;
-            document.getElementById('tmOwner').innerText = data.owner_name;
-            document.getElementById('tmClasses').innerText = data.mktu_nums.join(', ');
-
-            // Показываем карточку и кнопку запуска
-            document.getElementById('tmInfoCard').classList.remove('d-none');
-            document.getElementById('progressCard').classList.add('d-none');
-            document.getElementById('currentResultsCard').classList.add('d-none');
-            document.getElementById('btnStartScan').disabled = false;
-
-        } catch (error) {
-            alert(error.message);
-            document.getElementById('tmInfoCard').classList.add('d-none');
-        } finally {
-            btn.innerHTML = `<i class="bi bi-search"></i> Найти ТЗ`;
-            btn.disabled = false;
-        }
-    }
-
-    async function startScan() {
-        const tmNumber = document.getElementById('tmInputScan').value.trim();
-        currentScannedTM = tmNumber;
-
-        // Блокируем кнопку и показываем панель прогресса
-        const btnStart = document.getElementById('btnStartScan');
-        btnStart.disabled = true;
-        btnStart.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Сканирование...`;
-
-        document.getElementById('progressCard').classList.remove('d-none');
-        document.getElementById('currentResultsCard').classList.add('d-none');
-        resetProgressUI();
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/scan/${tmNumber}`, { method: 'POST' });
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.detail);
-            }
-
-            // Начинаем поллинг статуса каждую секунду
-            pollInterval = setInterval(checkStatus, 1000);
-
-        } catch (error) {
-            alert(error.message);
-            btnStart.disabled = false;
-            btnStart.innerHTML = `<i class="bi bi-play-circle"></i> Запустить сканирование`;
-            document.getElementById('progressCard').classList.add('d-none');
-        }
-    }
-
-    async function checkStatus() {
-        try {
-            const res = await fetch(`${API_BASE_URL}/status`);
-            const data = await res.json();
-
-            // Обновляем UI стадий
-            updateStageUI('parsing', data.stages.parsing);
-            updateStageUI('generating', data.stages.generating);
-            updateStageUI('scraping', data.stages.scraping);
-            updateStageUI('analyzing', data.stages.analyzing);
-            updateStageUI('classifying', data.stages.classifying);
-            updateStageUI('reporting', data.stages.reporting);
-
-            // Если процесс завершился
-            if (data.is_running === false) {
-                clearInterval(pollInterval);
-
-                // Восстанавливаем кнопку
-                const btnStart = document.getElementById('btnStartScan');
-                btnStart.disabled = false;
-                btnStart.innerHTML = `<i class="bi bi-play-circle"></i> Запустить сканирование`;
-
-                document.getElementById('scanStatusBadge').className = "badge bg-success";
-                document.getElementById('scanStatusBadge').innerText = "Завершено!";
-
-                // Загружаем результаты
-                loadCurrentResults(currentScannedTM);
-            }
-        } catch (error) {
-            console.error("Ошибка поллинга:", error);
-        }
-    }
-
-    function updateStageUI(stageId, status) {
-        const el = document.getElementById(`stage-${stageId}`);
-        if (status === 'pending') {
-            el.className = 'list-group-item stage-pending';
-            el.innerHTML = `<i class="bi bi-circle"></i> ${el.innerText}`;
-        } else if (status === 'running') {
-            el.className = 'list-group-item stage-running';
-            el.innerHTML = `<span class="spinner-border spinner-border-sm text-primary"></span> ${el.innerText}`;
-        } else if (status === 'done') {
-            el.className = 'list-group-item stage-done';
-            el.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${el.innerText}`;
-        }
-    }
-
-    function resetProgressUI() {
-        document.getElementById('scanStatusBadge').className = "badge bg-warning text-dark";
-        document.getElementById('scanStatusBadge').innerText = "В процессе...";
-        ['parsing', 'generating', 'scraping', 'analyzing', 'classifying', 'reporting'].forEach(s => updateStageUI(s, 'pending'));
-    }
-
-    async function loadCurrentResults(tmNumber) {
-        try {
-            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}`);
-            const data = await res.json();
-
-            const tbody = document.querySelector('#currentResultsTable tbody');
-            tbody.innerHTML = '';
-
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="fw-bold">${item.domain_name}</td>
-                    <td><a href="${item.url}" target="_blank">${item.url}</a></td>
-                    <td><span class="badge ${getBadgeClass(item.predicted_category)} fs-6">${item.predicted_category}</span></td>
-                    <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('currentResultsCard').classList.remove('d-none');
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    // --- ФУНКЦИИ ВКЛАДКИ ИСТОРИИ ---
-
-    async function loadHistory() {
-        const tmNumber = document.getElementById('tmInputHistory').value.trim();
-        if (!tmNumber) return;
-
-        const tbody = document.querySelector('#historyTable tbody');
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center"><span class="spinner-border text-primary"></span> Загрузка...</td></tr>`;
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}`);
-            if (!res.ok) throw new Error("Нет данных");
-            const data = await res.json();
-
-            tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">История пуста.</td></tr>`;
-                return;
-            }
-
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.id}</td>
-                    <td class="fw-bold">${item.domain_name}</td>
-                    <td><a href="${item.url}" target="_blank">${item.url}</a></td>
-                    <td><span class="badge ${getBadgeClass(item.predicted_category)}">${item.predicted_category}</span></td>
-                    <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
-                    <td>${item.domain_similarity ? item.domain_similarity.toFixed(2) : '-'}</td>
-                    <td class="text-muted small">${new Date(item.scan_date).toLocaleString('ru-RU')}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (error) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">${error.message}</td></tr>`;
-        }
-    }
-
-    function getBadgeClass(category) {
-        if (category === 'Нарушение') return 'badge-violation';
-        if (category === 'Легальный') return 'badge-legal';
-        if (category === 'Парковка') return 'badge-parking';
-        return 'badge-suspicious';
-    }
-</script>
+<script src="/static/js/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

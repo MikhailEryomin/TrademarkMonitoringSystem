@@ -6,6 +6,7 @@ from modules.analyzer import FeatureExtractor
 from modules.classifier import TrademarkClassifier
 from modules.tm_parser import TrademarkParser
 from modules.reporter import Reporter
+from modules.osint import check_whois, validate_inn
 import socket, aiohttp
 import json  # debug
 
@@ -25,7 +26,7 @@ class TrademarkPipeline:
     """
     Класс-оркестратор для управления полным циклом поиска и анализа нарушений товарного знака.
     """
-    DEFAULT_SCRAPER_LIMIT = 200
+    DEFAULT_SCRAPER_LIMIT = 500
 
     def _update_status(self, stage: str, status: str):
         """Вспомогательный метод для отправки статуса"""
@@ -38,7 +39,7 @@ class TrademarkPipeline:
         self.tm_db = {}
         self.domains = []
         self.scraped_data = []
-        self.feature_vectors = []
+        self.analyzed_data = []
         self.predictions = []
 
         # Инициализация модулей
@@ -53,8 +54,6 @@ class TrademarkPipeline:
         print("--- 0. Trademark Parsing & DB Caching ---")
         self.tm_db = self.parser.get_or_fetch_trademark(self.tm_number)
         print(json.dumps(self.tm_db, indent=4, ensure_ascii=False))
-
-        print(f"Данные ТЗ: Бренд: '{self.tm_db['name']}', Владелец: '{self.tm_db['owner_name']}'")
 
     def _generate_domains(self):
         """Шаг 1: Генерирует список потенциально нарушающих доменов."""
@@ -74,24 +73,51 @@ class TrademarkPipeline:
         self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
         print(f"Scraped {len(self.scraped_data)} active/parked sites.")
 
-    def _analyze_sites(self):
-        """Шаг 3: Извлекает формализованные векторы признаков с помощью BERT и LLM."""
-        print("\n--- 3. Analysis & Feature Extraction ---")
-        if not self.scraped_data:
-            print("No sites to analyze.")
-            return
-
+    async def _analyze_sites(self):
+        # ...
         for site in self.scraped_data:
-            features = self.analyzer.analyze_site(site, self.tm_db)
-            features['url'] = site['url']
-            self.feature_vectors.append(features)
+            url = site['url']
+            domain = url.replace('https://', '').replace('http://', '').split('/')[0]
 
-        print(f"Analyzed {len(self.feature_vectors)} sites.")
+            # 1. Запрашиваем WHOIS
+            whois_info = check_whois(domain)
+            if whois_info:
+                print(f'WHOIS Info: {whois_info}')
+
+            # 2. Проверяем первый найденный ИНН (если есть)
+            inns = site['contacts'].get('inn', [])
+            inn_info = {}
+            if inns:
+                inn_info = validate_inn(inns[0])
+            if inn_info:
+                print(f"DaData info: {inn_info}")
+            else:
+                print(f"DaData info: No INN found")
+
+            # 3. Базовый анализ (LLM + BERT)
+            features = await asyncio.to_thread(self.analyzer.analyze_site, site, self.tm_db)
+
+            # 4. Добавляем OSINT фичи в вектор для классификатора!
+            features['is_private_whois'] = 1 if whois_info['is_private'] else 0
+            features['is_fake_inn'] = 1 if inns and not site.get('inn_validation', {}).get('exists') else 0
+
+            features['osint'] = {
+                'contacts': site.get('contacts', {}),
+                'whois': whois_info,
+                'inn_validation': inn_info
+            }
+
+            self.analyzed_data.append({
+                'url': url,
+                'features': features
+            })
+
+            print(f"Analyzed {len(self.analyzed_data)} sites.")
 
     def _classify_sites(self):
         """Шаг 4: Классифицирует векторы признаков, вынося вердикт по каждому сайту."""
         print("\n--- 4. Classification ---")
-        if not self.feature_vectors:
+        if not self.analyzed_data:
             print("No feature vectors to classify.")
             return
 
@@ -105,15 +131,15 @@ class TrademarkPipeline:
         train_y = ['Нарушение', 'Легальный', 'Парковка', 'Легальный']
         self.classifier.train(train_x, train_y)
 
-        for vector in self.feature_vectors:
-            verdict = self.classifier.predict(vector)
+        for item in self.analyzed_data:
+            verdict = self.classifier.predict(item['features'])
             self.predictions.append(verdict)
 
     def _report_results(self):
         """Шаг 5: Вызывает модуль Reporter для сохранения и вывода результатов."""
         self.reporter.report_results(
             tm_number=self.tm_number,
-            feature_vectors=self.feature_vectors,
+            analyzed_data=self.analyzed_data,
             predictions=self.predictions
         )
 
@@ -132,7 +158,7 @@ class TrademarkPipeline:
         self._update_status("scraping", "done")
 
         self._update_status("analyzing", "running")
-        self._analyze_sites()
+        await self._analyze_sites()
         self._update_status("analyzing", "done")
 
         self._update_status("classifying", "running")
@@ -145,9 +171,9 @@ class TrademarkPipeline:
 
 
 if __name__ == "__main__":
-    # TM_NUMBER = "762980" #СБЕР
-    TM_NUMBER = "752380"  # OZON
-    LIMIT = 500
+    TM_NUMBER = "762980"  # СБЕР
+    # TM_NUMBER = "752380"  # OZON
+    LIMIT = 200
 
     pipeline = TrademarkPipeline(tm_number=TM_NUMBER)
     asyncio.run(pipeline.run())

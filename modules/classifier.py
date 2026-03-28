@@ -42,6 +42,13 @@ class TrademarkClassifier:
         Реализация бизнес-логики проверки (на основе документа заказчика от 16.03.2026).
         """
 
+        # П. 2.1: Если сайт пустой (заглушка) -> Парковка
+        if features.get('is_parked') == 1:
+            return 'Парковка'
+
+        if features.get('is_fake_inn') == 1:
+            return 'Нарушение'
+
         # П. 2.4: Фейковый агрегатор / Перенаправление на продажу -> Нарушение
         if features.get('is_fake_aggregator') == 1:
             return 'Нарушение'
@@ -69,6 +76,9 @@ class TrademarkClassifier:
 
             # П. 2.2 (Дефис 3): Свой домен (не похож), но продает ТОЛЬКО этот бренд -> Подозрительный
             if features.get('domain_similarity', 0) < 0.3 and features.get('is_marketplace') == 0:
+                return 'Подозрительный'
+
+            if features.get('is_private_whois') == 1:
                 return 'Подозрительный'
 
         # Если ни одно жесткое правило не сработало, возвращаем None.
