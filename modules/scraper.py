@@ -91,17 +91,17 @@ class AsyncScraper:
 
                         # 4. Checking for parked domain
                         if self.is_parked(metadata['content_sample'], metadata['title']):
-                            print(f"[.] Parked: {target_url}")
+                            print(f"  [.] {target_url} -> Парковка (отброшен)")
                             metadata['status'] = 'parked'
                             return None
 
                         # 5. Setting final status
                         if is_redirect:
-                            print(f"[>] Redirect: {target_url} -> {final_url}")
+                            print(f"  [>] {target_url} -> Редирект на {final_url}")
                             metadata['status'] = 'redirect'
                             metadata['original_url'] = target_url
                         else:
-                            print(f"[+] Active: {target_url}")
+                            print(f"  [+] {target_url} -> Активен (Язык: {metadata['language']})")
                             metadata['status'] = 'active'
 
                         return metadata

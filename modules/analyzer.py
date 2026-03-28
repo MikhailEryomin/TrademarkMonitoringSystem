@@ -1,5 +1,5 @@
 import json
-import time
+import re
 from dotenv import load_dotenv
 from modules.LLM import query
 from sentence_transformers import SentenceTransformer, util
@@ -45,24 +45,31 @@ def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
 
 
 def _query_llm(prompt: str) -> dict:
-    """Отправляет запрос в LLM и возвращает распарсенный JSON."""
-    print("  - Отправка запроса в LLM...")
+    print("  [~] Отправка запроса в LLM (Llama-3.3-70b)...")
     try:
-        full_prompt = "Ты ИИ-юрист. Твоя задача — извлекать факты из текста сайта и возвращать их в формате JSON.\n\n" + prompt
-
+        full_prompt = "Ты ИИ-юрист. Твоя задача — извлекать факты из текста сайта и возвращать их строго в формате JSON без markdown.\n\n" + prompt
         response = query(full_prompt)
 
-        return json.loads(response.text)
+        raw_text = response.text
+        # Извлекаем текст ответа
+        response_data = json.loads(raw_text)
+        content = response_data['choices'][0]['message']['content']
+
+        # ОЧИСТКА ОТ МАРКДАУНА (Защита от галлюцинаций LLM)
+        content = re.sub(r'```json\n?', '', content)
+        content = re.sub(r'```\n?', '', content)
+
+        parsed_json = json.loads(content)
+
+        print("  [+] Ответ LLM успешно получен и распарсен.")
+        return parsed_json
 
     except Exception as e:
-        print(f"  [!] Ошибка Gemini API: {e}")
-        time.sleep(5)
+        print(f"  [!] Ошибка LLM API: {e}")
         return {
-            "has_legal_info": False,
-            "owner_match": False,
-            "commercial_intent": False,
-            "is_review_news_site": False,
-            "claims_official": False
+            "has_legal_info": False, "has_physical_address": False,
+            "owner_match": False, "commercial_intent": False,
+            "is_marketplace": False, "is_review_news_site": False, "is_fake_aggregator": False
         }
 
 
@@ -178,7 +185,7 @@ class FeatureExtractor:
         except Exception as e:
             print(f"LLM Error: {e}")
             features.update({
-                'has_legal_info': 0, 'has_physical_address': 0, 'owner_match': 0,  'commercial_intent': 0,
+                'has_legal_info': 0, 'has_physical_address': 0, 'owner_match': 0, 'commercial_intent': 0,
                 'is_marketplace': 0, 'is_review_news_site': 0, 'is_fake_agregator': 0
             })
 

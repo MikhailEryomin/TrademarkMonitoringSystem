@@ -74,25 +74,31 @@ class TrademarkPipeline:
         print(f"Scraped {len(self.scraped_data)} active/parked sites.")
 
     async def _analyze_sites(self):
-        # ...
+
+        print("\n--- 3. Analysis & Feature Extraction ---")
+        if not self.scraped_data:
+            print("No sites to analyze.")
+            return
+
         for site in self.scraped_data:
             url = site['url']
             domain = url.replace('https://', '').replace('http://', '').split('/')[0]
 
+            print(f"\n➤ АНАЛИЗ САЙТА: {url}")
+
             # 1. Запрашиваем WHOIS
             whois_info = check_whois(domain)
-            if whois_info:
-                print(f'WHOIS Info: {whois_info}')
+            print(f"  [*] WHOIS: Владелец = {whois_info.get('registrant_org')}, Private = {whois_info.get('is_private')}")
 
             # 2. Проверяем первый найденный ИНН (если есть)
             inns = site['contacts'].get('inn', [])
             inn_info = {}
             if inns:
                 inn_info = validate_inn(inns[0])
-            if inn_info:
-                print(f"DaData info: {inn_info}")
+                print(
+                    f"  [*] DaData (ИНН {inns[0]}): Найдено = {inn_info.get('exists')}, Статус = {inn_info.get('status')}")
             else:
-                print(f"DaData info: No INN found")
+                print("  [*] DaData: ИНН на сайте не найден.")
 
             # 3. Базовый анализ (LLM + BERT)
             features = await asyncio.to_thread(self.analyzer.analyze_site, site, self.tm_db)
@@ -112,7 +118,9 @@ class TrademarkPipeline:
                 'features': features
             })
 
-            print(f"Analyzed {len(self.analyzed_data)} sites.")
+            print(f"  [RESULT] Итоговый вектор признаков для классификатора:")
+            debug_features = {k: v for k, v in features.items() if k != 'osint'}
+            print(json.dumps(debug_features, indent=2, ensure_ascii=False))
 
     def _classify_sites(self):
         """Шаг 4: Классифицирует векторы признаков, вынося вердикт по каждому сайту."""
@@ -150,7 +158,7 @@ class TrademarkPipeline:
         self._update_status("parsing", "done")
 
         self._update_status("generating", "running")
-        self._generate_domains()
+        # self._generate_domains()
         self._update_status("generating", "done")
 
         self._update_status("scraping", "running")

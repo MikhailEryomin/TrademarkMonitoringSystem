@@ -50,6 +50,7 @@ class ScanResultResponse(BaseModel):
     is_parked: bool
     domain_similarity: Optional[float]
     content_homogeneity: Optional[float]
+    features: dict = {}
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -141,10 +142,10 @@ def get_scan_results(tm_number: str):
                 "predicted_category": res.predicted_category,
                 "confidence": res.confidence,
                 "scan_date": res.scan_date,
-                # Достаем признаки из JSON колонки (features)
                 "is_parked": res.features.get("is_parked", False) if res.features else False,
                 "domain_similarity": res.features.get("domain_similarity") if res.features else None,
                 "content_homogeneity": res.features.get("homogeneity_score") if res.features else None,
+                "features": res.features if res.features else {}
             })
         return response_data
 

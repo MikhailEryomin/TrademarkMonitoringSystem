@@ -56,7 +56,7 @@ def validate_inn(inn: str) -> dict:
             return {"exists": False}
 
 
-whois_info = check_whois('ozon-soft.com')
+#whois_info = check_whois('ozon-soft.com')
 #inn_info = validate_inn('760211629532')
-print(whois_info)
+#print(whois_info)
 #print(inn_info)
