@@ -2,7 +2,6 @@ import asyncio
 import aiohttp
 import json
 import re
-import socket
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from typing import List, Dict, Optional
@@ -15,13 +14,12 @@ from core.squatting_cfg import PARKING_KEYWORDS
 # ==========================================
 CONCURRENCY_LIMIT = 5
 TIMEOUT_SECONDS = 5
-HTML_CONTENT_CHARACTERS_LIMIT = 4000
 OUTPUT_DIR = 'output/json'
-RELEVANT_LANGUAGES = ['ru', 'en', 'unknown']
+# RELEVANT_LANGUAGES = ['ru', 'en', 'et']
 
 # Fetch parameters
 HEAD_LIMIT = 2000
-TAIL_LIMIT = 1500
+TAIL_LIMIT = 2000
 
 
 class AsyncScraper:
@@ -64,6 +62,7 @@ class AsyncScraper:
         async with self.semaphore:
             for proto in protocols:
                 target_url = f"{proto}{domain}"
+                print(f'[Scraper] fetch_domain: target_url={target_url}')
                 try:
                     async with session.get(
                             target_url,
@@ -86,14 +85,16 @@ class AsyncScraper:
                         metadata = self.extract_metadata(html, final_url)
 
                         # 3. Checking for content language
-                        if metadata['language'] not in RELEVANT_LANGUAGES:
-                            return None
+                        # language = metadata['language']
+                        # if language not in RELEVANT_LANGUAGES:
+                        #     print(f'[Scraper] Not relevant language {language}. Skipping...')
+                        #     return None
 
                         # 4. Checking for parked domain
-                        if self.is_parked(metadata['content_sample'], metadata['title']):
-                            print(f"  [.] {target_url} -> Парковка (отброшен)")
+                        if self.is_parked(metadata['content_sample'], metadata['title'], metadata['description']):
+                            print(f"  [.] {target_url} -> Парковка")
                             metadata['status'] = 'parked'
-                            return None
+                            return metadata
 
                         # 5. Setting final status
                         if is_redirect:
@@ -106,9 +107,8 @@ class AsyncScraper:
 
                         return metadata
 
-                except (aiohttp.ClientConnectorError, socket.gaierror, asyncio.TimeoutError):
-                    return None
-                except Exception:
+                except Exception as e:
+                    print(f"  [!] Ошибка для {target_url}: {type(e).__name__}")
                     continue
 
             return None
@@ -137,7 +137,7 @@ class AsyncScraper:
 
         # 3. Getting contacts
         emails = set(re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', full_text))
-        phones = set(re.findall(r'(?:\+7|8)[\s\(-]*\d{3}[\s\)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}', full_text))
+        phones = set(re.findall(r'(?:\+7|8)(?:[\s\-\(\)]*\d){10}', full_text))
         inn_codes = set(re.findall(r'ИНН\s?:?\s?(\d{10,12})', full_text))
 
         # 4. Body + Footer slicing
@@ -146,13 +146,7 @@ class AsyncScraper:
         else:
             head = full_text[:HEAD_LIMIT]
             tail = full_text[-TAIL_LIMIT:]
-            content_sample = f"{head}\n\n... [FRAGMENT REMOVED] ...\n\n{tail}"
-
-        # 5. Footer for debug
-        footer_text = ""
-        footer_tag = soup.find('footer')
-        if footer_tag:
-            footer_text = footer_tag.get_text(strip=True)
+            content_sample = f"{head}\n\n...\n\n{tail}"
 
         return {
             "url": url,
@@ -160,13 +154,11 @@ class AsyncScraper:
             "language": language,
             "title": title.strip() if title else "",
             "description": description.strip() if description else "",
-            "h1": h1_tags,
             "contacts": {
                 "emails": list(emails),
                 "phones": list(phones),
                 "inn": list(inn_codes)
             },
-            "footer_extracted": footer_text[:500],
             "content_sample": content_sample
         }
 
@@ -175,20 +167,20 @@ class AsyncScraper:
         """Очищает HTML от скриптов, стилей и оставляет только чистый текст."""
         soup = BeautifulSoup(html_content, 'html.parser')
 
-        for script in soup(["script", "style", "iframe", "svg"]):
-            script.extract()
+        for element in soup(["script", "style", "nav", "noscript", "svg", "button"]):
+            element.extract()
 
-        text = soup.get_text()
-        lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        return ' '.join(chunk for chunk in chunks if chunk)
+        raw_text = soup.get_text(separator=' | ')
+        full_text = re.sub(r'\s+', ' ', raw_text)
+        full_text = re.sub(r'(\|\s*)+', '| ', full_text).strip()
+        return full_text
 
     # ==========================================
     # UTILITIES & HEURISTICS
     # ==========================================
 
     @staticmethod
-    def is_parked(text: str, title: str) -> bool:
+    def is_parked(text: str, title: str, description: str) -> bool:
         """Проверяет эвристикой, является ли страница парковкой домена."""
         content = (text + " " + title).lower()
 
@@ -196,7 +188,8 @@ class AsyncScraper:
             if keyword in content:
                 return True
 
-        if len(text) < 200:
+        total_meta_len = len(title) + len(description)
+        if len(text) < 150 and total_meta_len < 50:
             return True
 
         return False

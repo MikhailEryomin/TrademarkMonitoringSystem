@@ -247,6 +247,8 @@ class TrademarkParser:
                 "mktu_descriptions": [cls["description"] for cls in mktu_classes],
                 "mktu_nums": [cls["number"] for cls in mktu_classes]
             }
+        except Exception as e:
+            print(f'\nDbError: {e}')
         finally:
             db.close()
 

@@ -18,7 +18,8 @@ class TrademarkClassifier:
             'domain_similarity', 'homogeneity_score', 'is_redirect', 'is_parked',
             'has_contacts_info', 'has_legal_info', 'has_physical_address',
             'owner_match', 'commercial_intent', 'is_marketplace',
-            'is_review_news_site', 'is_fake_aggregator'
+            'is_review_news_site', 'is_fake_aggregator',
+            'is_private_whois', 'is_fake_inn', 'has_suspicious_payment'  # <-- Добавили!
         ]
         # Маппинг классов (Текстовая метка -> Число)
         self.label_map = {
@@ -39,50 +40,61 @@ class TrademarkClassifier:
 
     def _apply_heuristics(self, features: dict) -> str | None:
         """
-        Реализация бизнес-логики проверки (на основе документа заказчика от 16.03.2026).
+        Реализация бизнес-логики проверки (на основе калибровочного датасета заказчика).
         """
-
-        # П. 2.1: Если сайт пустой (заглушка) -> Парковка
+        # ==========================================
+        # УРОВЕНЬ 1: ЖЕЛЕЗОБЕТОННЫЕ ИНДИКАТОРЫ (100% уверенность)
+        # ==========================================
         if features.get('is_parked') == 1:
             return 'Парковка'
 
-        if features.get('is_fake_inn') == 1:
+        if features.get('is_fake_inn') == 1 or features.get('is_fake_aggregator') == 1:
             return 'Нарушение'
 
-        # П. 2.4: Фейковый агрегатор / Перенаправление на продажу -> Нарушение
-        if features.get('is_fake_aggregator') == 1:
-            return 'Нарушение'
-
-        # П. 1.1.1: Домен принадлежит правообладателю (совпал ИНН/Владелец) -> Легальный
         if features.get('owner_match') == 1:
+            # Защита от подмены: если владелец совпал, но WHOIS скрыт - это аномалия (надо проверить)
+            if features.get('is_private_whois') == 1:
+                return 'Подозрительный'
             return 'Легальный'
 
-        # П. 2.3: Настоящий новостной портал или агрегатор отзывов -> Легальный
-        if features.get('is_review_news_site') == 1 and features.get('commercial_intent') == 0:
-            return 'Легальный'
-
-        # П. 2.2 (Дефис 2): Продает множество брендов (Маркетплейс) -> Легальный
         if features.get('is_marketplace') == 1:
             return 'Легальный'
 
-        # --- БЛОК АНАЛИЗА НАРУШЕНИЙ (Сайт коммерческий и однородный) ---
-        if features.get('commercial_intent') == 1 and features.get('homogeneity_score', 0) > 0.5:
+        if features.get('is_review_news_site') == 1 and features.get('commercial_intent') == 0:
+            return 'Легальный'
 
-            # П. 1.1.2: Нет юр. информации, нет адреса или нет контактов -> Нарушение
-            has_info = features.get('has_legal_info') == 1 and features.get('has_physical_address') == 1
-            if not has_info:
-                if features.get('domain_similarity', 0) > 0.5:
-                    return 'Нарушение'  # Косит под бренд и скрывает данные
+        # Если идет редирект (и мы уже знаем, что это не владелец)
+        if features.get('is_redirect') == 1:
+            return 'Подозрительный'
 
-            # П. 2.2 (Дефис 3): Свой домен (не похож), но продает ТОЛЬКО этот бренд -> Подозрительный
-            if features.get('domain_similarity', 0) < 0.3 and features.get('is_marketplace') == 0:
+        # ==========================================
+        # УРОВЕНЬ 2: АНАЛИЗ НАРУШЕНИЙ И СЕРОЙ ЗОНЫ
+        # ==========================================
+        # Если сайт коммерческий и товары однородны (>0.45, учитывая размытие BERT)
+        if features.get('commercial_intent') == 1 and features.get('homogeneity_score', 0) > 0.45:
+
+            # ЯВНОЕ НАРУШЕНИЕ: продает товары, скрывает владельца (Whois) ИЛИ не дает юр. лицо
+            if features.get('is_private_whois') == 1 or features.get('has_legal_info') == 0:
+                # Если при этом домен косит под ТЗ
+                if features.get('domain_similarity', 0) > 0.6:
+                    return 'Нарушение'
+
+            # ПРОЗРАЧНЫЙ РЕСЕЛЛЕР (Серая зона): Юрлицо есть, контакты есть, домен похож, но не владелец
+            if features.get('has_legal_info') == 1 and features.get('has_contacts_info') == 1:
+                if features.get('domain_similarity', 0) > 0.7:
+                    return 'Подозрительный' # Похоже на официального дилера, надо проверять договор
+
+        # ИНФОРМАЦИОННЫЙ ПАРАЗИТИЗМ
+        # Бренд в домене + скрыт владелец + инфо-сайт (без корзины)
+        if features.get('domain_similarity', 0) >= 0.9 and features.get('is_private_whois') == 1:
+            if features.get('is_review_news_site') == 1 and features.get('commercial_intent') == 0:
                 return 'Подозрительный'
 
-            if features.get('is_private_whois') == 1:
-                return 'Подозрительный'
-
-        # Если ни одно жесткое правило не сработало, возвращаем None.
-        # Дальше решение примет обученный RandomForest.
+        # ==========================================
+        # УРОВЕНЬ 3: МАШИННОЕ ОБУЧЕНИЕ
+        # ==========================================
+        # Если ни одно правило не дало 100% уверенности, возвращаем None.
+        # В дело вступит Random Forest!
         return None
 
     def train(self, X_dicts: list[dict], y_labels: list[str]):

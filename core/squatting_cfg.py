@@ -87,7 +87,7 @@ PARKING_KEYWORDS = [
     "parked free", "godaddy", "dan.com", "sedo", "domain info",
     "domain has been registered", "future home of", "сайт находится в разработке",
     "хостинг", "домен продается", "купить этот домен", "reg.ru", "nic.ru",
-    "parking", "under construction", "coming soon", "related links"
+    "parking", "under construction", "coming soon"
 ]
 
 # heuristic data 

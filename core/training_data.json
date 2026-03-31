@@ -1,0 +1,1062 @@
+[
+    {
+        "url": "https://otzovik.com/reviews/adidas_ru-internet-magazin_sportivnoy_odezhdi_i_obuvi/",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3144,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.avito.ru/",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4243,
+            "has_legal_info": 1,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 1,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avito-rabota.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3085,
+            "has_legal_info": 1,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://irecommend.ru/content/internet-magazin-ozon-kazan-0",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4555,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://ozon-job.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5172,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://ozon23.com",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.418,
+            "has_legal_info": 1,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsungdriver.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3577,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsunb.com",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://szmsung.com",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0.0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://remont-samsung.su",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3937,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://amsung.net",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://amsung.org",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0.0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsung-pay.net",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.1087,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsing.net",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "http://ww16.sam.sung.org/?sub1=20260217-0259-5799-8a1d-4c6af5ab4d6f",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://ssmsung.com",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 0.9,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsung-account.info",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.samsungstore.ru/",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3266,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.securitysamsung.ru/",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3213,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://supportsamsung.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.2667,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsung-center.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4447,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsung-nn.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.2287,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://center-samsung.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.39,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://samsung-help.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3436,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://online-samsung.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.2129,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://help-samsung.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5999,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://lk-sberbank.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3618,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://sberbanklk.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4021,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://sberbcnk.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3626,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://sberbank-service.ru",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5699,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://onlinesberbank.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3064,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.sberbank.ru/ru/person",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.484,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://adidasofficial.ru",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://spb-adidas.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.118,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://adidasonline.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.061,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitoexpress.online",
+        "label": "Парковка",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 1,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitoteam.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5663,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avito-info.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3879,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://dostavka-avito.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4921,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitolog.org",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5415,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitocenter.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3893,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitocenter.com",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.6945,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avito-kabinet.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4155,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitolog.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4288,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avitolog.net",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4136,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://avito-money.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.4611,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://s-services-msk.ru",
+        "label": "Нарушение",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 0.0714,
+            "homogeneity_score": 0.2497,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.tbank.ru/",
+        "label": "Легальный",
+        "features": {
+          "is_redirect": 0,
+          "is_parked": 0,
+          "has_contacts_info": 0,
+          "domain_similarity": 1.0,
+          "homogeneity_score": 0.4387,
+          "has_legal_info": 1,
+          "has_physical_address": 1,
+          "owner_match": 1,
+          "commercial_intent": 1,
+          "is_marketplace": 0,
+          "is_review_news_site": 0,
+          "is_fake_agregator": 0,
+          "is_private_whois": 0,
+          "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.vtb.ru/",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3713,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.mvideo.ru",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3587,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 1,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://www.gazprom.ru",
+        "label": "Легальный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3391,
+            "has_legal_info": 1,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://lenta.ru/tags/organizations/sberbank-rossii/",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.3627,
+            "has_legal_info": 1,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 1,
+            "is_fake_agregator": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0
+        }
+    },
+    {
+        "url": "https://habr.com/ru/companies/tbank/news/",
+        "label": "Подозрительный",
+        "features": {
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.5131,
+            "has_legal_info": 0,
+            "has_physical_address": 1,
+            "owner_match": 1,
+            "commercial_intent": 1,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_agregator": 0,
+            "is_private_whois": 1,
+            "is_fake_inn": 0
+        }
+    }
+]

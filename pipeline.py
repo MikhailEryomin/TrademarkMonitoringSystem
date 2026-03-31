@@ -51,7 +51,7 @@ class TrademarkPipeline:
 
     def _parse_trademark(self):
         """Шаг 0: Получение данных о товарном знаке (Из БД или ФИПС)."""
-        print("--- 0. Trademark Parsing & DB Caching ---")
+        print("\n\n--- 0. Trademark Parsing & DB Caching ---\n")
         self.tm_db = self.parser.get_or_fetch_trademark(self.tm_number)
         print(json.dumps(self.tm_db, indent=4, ensure_ascii=False))
 
@@ -67,17 +67,26 @@ class TrademarkPipeline:
 
     async def _scrape_domains(self, limit=500):
         """Шаг 2: Проверяет домены и собирает данные с 'живых' сайтов."""
-        test_domains = list(self.domains)[:limit]
-        print(f"\n--- 2. Scraping ({len(test_domains)} domains) ---")
 
-        self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
-        print(f"Scraped {len(self.scraped_data)} active/parked sites.")
+        #test_domains = list(self.domains)[:limit]
+        test_domains = [
+            'www.mvideo.ru'
+        ]
+
+        print(f"\n--- 2. Scraping ({len(test_domains)} domains) ---\n")
+
+        #self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
+        self.scraped_data = await self.scraper.run('SAMSUNG_TEST', test_domains)
+
+        print(self.scraped_data)
+
+        print(f"[Scraper] Scraped {len(self.scraped_data)} active/parked sites.")
 
     async def _analyze_sites(self):
 
         print("\n--- 3. Analysis & Feature Extraction ---")
         if not self.scraped_data:
-            print("No sites to analyze.")
+            print("[Analyzer] No sites to analyze.")
             return
 
         for site in self.scraped_data:
@@ -88,7 +97,7 @@ class TrademarkPipeline:
 
             # 1. Запрашиваем WHOIS
             whois_info = check_whois(domain)
-            print(f"  [*] WHOIS: Владелец = {whois_info.get('registrant_org')}, Private = {whois_info.get('is_private')}")
+            print(f"[*] WHOIS: Владелец = {whois_info.get('registrant_org')}, Private = {whois_info.get('is_private')}")
 
             # 2. Проверяем первый найденный ИНН (если есть)
             inns = site['contacts'].get('inn', [])
@@ -96,9 +105,10 @@ class TrademarkPipeline:
             if inns:
                 inn_info = validate_inn(inns[0])
                 print(
-                    f"  [*] DaData (ИНН {inns[0]}): Найдено = {inn_info.get('exists')}, Статус = {inn_info.get('status')}")
+                    f"[*] DaData (ИНН {inns[0]}): Найдено = {inn_info.get('exists')}, Статус = {inn_info.get('status')}")
             else:
-                print("  [*] DaData: ИНН на сайте не найден.")
+                print("[*] DaData: ИНН на сайте не найден.")
+            site['inn_validation'] = inn_info
 
             # 3. Базовый анализ (LLM + BERT)
             features = await asyncio.to_thread(self.analyzer.analyze_site, site, self.tm_db)
@@ -118,7 +128,7 @@ class TrademarkPipeline:
                 'features': features
             })
 
-            print(f"  [RESULT] Итоговый вектор признаков для классификатора:")
+            print(f"[*] Итоговый вектор признаков для классификатора:")
             debug_features = {k: v for k, v in features.items() if k != 'osint'}
             print(json.dumps(debug_features, indent=2, ensure_ascii=False))
 
@@ -170,17 +180,22 @@ class TrademarkPipeline:
         self._update_status("analyzing", "done")
 
         self._update_status("classifying", "running")
-        self._classify_sites()
+        #self._classify_sites()
         self._update_status("classifying", "done")
 
         self._update_status("reporting", "running")
-        self._report_results()
+        #self._report_results()
         self._update_status("reporting", "done")
 
 
 if __name__ == "__main__":
-    TM_NUMBER = "762980"  # СБЕР
+    # TM_NUMBER = "123553" # SAMSUNG
+    # TM_NUMBER = "524098" # AVITO
+    # TM_NUMBER = "762980"  # СБЕР
     # TM_NUMBER = "752380"  # OZON
+    # TM_NUMBER = "1198188" # ADIDAS
+    # TM_NUMBER = "1026734" # TBANK
+    TM_NUMBER = "418225" # MVIDEO
     LIMIT = 200
 
     pipeline = TrademarkPipeline(tm_number=TM_NUMBER)
