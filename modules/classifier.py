@@ -10,16 +10,29 @@ MODEL_PATH = 'core/model_dump.pkl'
 class TrademarkClassifier:
     def __init__(self):
         # Используем Случайный Лес: надежный алгоритм для задач классификации
-        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.model = RandomForestClassifier(
+            n_estimators=100,
+            random_state=42,
+            class_weight='balanced'
+        )
         self.is_trained = False
 
-        # Порядок признаков ОЧЕНЬ важен. Он должен быть одинаковым при обучении и прогнозе.
         self.feature_order = [
-            'domain_similarity', 'homogeneity_score', 'is_redirect', 'is_parked',
-            'has_contacts_info', 'has_legal_info', 'has_physical_address',
-            'owner_match', 'commercial_intent', 'is_marketplace',
-            'is_review_news_site', 'is_fake_aggregator',
-            'is_private_whois', 'is_fake_inn', 'has_suspicious_payment'  # <-- Добавили!
+            'domain_similarity',
+            'homogeneity_score',
+            'is_redirect',
+            'is_parked',
+            'has_contacts_info',
+            'has_legal_info',
+            'has_physical_address',
+            'owner_match',
+            'commercial_intent',
+            'is_marketplace',
+            'is_review_news_site',
+            'is_fake_aggregator',
+            'is_homogenous',
+            'is_private_whois',
+            'is_fake_inn',
         ]
         # Маппинг классов (Текстовая метка -> Число)
         self.label_map = {
@@ -52,13 +65,15 @@ class TrademarkClassifier:
             return 'Нарушение'
 
         if features.get('owner_match') == 1:
-            # Защита от подмены: если владелец совпал, но WHOIS скрыт - это аномалия (надо проверить)
             if features.get('is_private_whois') == 1:
                 return 'Подозрительный'
             return 'Легальный'
 
         if features.get('is_marketplace') == 1:
-            return 'Легальный'
+            if features.get('domain_similarity', 0) > 0.6:
+                return 'Нарушение'  # Например: avito.site, ozon-market.ru
+            else:
+                return 'Легальный'  # Например: wildberries.ru (не похож на Avito)
 
         if features.get('is_review_news_site') == 1 and features.get('commercial_intent') == 0:
             return 'Легальный'
@@ -70,8 +85,11 @@ class TrademarkClassifier:
         # ==========================================
         # УРОВЕНЬ 2: АНАЛИЗ НАРУШЕНИЙ И СЕРОЙ ЗОНЫ
         # ==========================================
+
+        is_homogenous = features.get('is_homogenous') == 1 or features.get('homogeneity_score', 0) > 0.5
+
         # Если сайт коммерческий и товары однородны (>0.45, учитывая размытие BERT)
-        if features.get('commercial_intent') == 1 and features.get('homogeneity_score', 0) > 0.45:
+        if features.get('commercial_intent') == 1 and is_homogenous:
 
             # ЯВНОЕ НАРУШЕНИЕ: продает товары, скрывает владельца (Whois) ИЛИ не дает юр. лицо
             if features.get('is_private_whois') == 1 or features.get('has_legal_info') == 0:

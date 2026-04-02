@@ -35,9 +35,7 @@ class Trademark(Base):
 
     owner = relationship("Owner", back_populates="trademarks")
 
-    # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-    # Связь "Многие-ко-многим" через нашу новую таблицу
-    mktu_classes = relationship("MKTUClass", secondary=trademark_mktu_association, back_populates="trademarks")
+    mktu_classes = relationship("TrademarkMKTUClass", back_populates="trademark")
 
     def __repr__(self):
         return f"<Trademark(id={self.id}, name='{self.name}')>"
@@ -53,19 +51,14 @@ class Owner(Base):
         return f"<Owner(id={self.id}, name='{self.name}')>"
 
 
-# ========================================================
-# НОВАЯ ЦЕНТРАЛЬНАЯ ТАБЛИЦА ДЛЯ КЛАССОВ МКТУ
-# ========================================================
-class MKTUClass(Base):
+class TrademarkMKTUClass(Base):
     __tablename__ = 'mktu_classes'
     id = Column(Integer, primary_key=True)
-    number = Column(Integer, unique=True, nullable=False, index=True)
-    description = Column(Text, nullable=False)
+    number = Column(Integer, index=True)  # Номер класса (9, 35...)
+    description = Column(Text)  # Конкретное описание из ФИПС для ЭТОГО знака
 
-    trademarks = relationship("Trademark", secondary=trademark_mktu_association, back_populates="mktu_classes")
-
-    def __repr__(self):
-        return f"<MKTUClass(number={self.number})>"
+    trademark_id = Column(Integer, ForeignKey('trademarks.id'))
+    trademark = relationship("Trademark", back_populates="mktu_classes")
 
 
 class ScanResult(Base):

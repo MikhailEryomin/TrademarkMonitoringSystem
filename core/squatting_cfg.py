@@ -83,7 +83,7 @@ KEYWORDS = [
 ]
 
 PARKING_KEYWORDS = [
-    "domain is for sale", "buy this domain", "domain name is available",
+    "parked domain", "domain owner", "domain is for sale", "buy this domain", "domain name is available",
     "parked free", "godaddy", "dan.com", "sedo", "domain info",
     "domain has been registered", "future home of", "сайт находится в разработке",
     "хостинг", "домен продается", "купить этот домен", "reg.ru", "nic.ru",

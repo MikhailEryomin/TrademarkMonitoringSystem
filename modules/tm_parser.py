@@ -4,7 +4,7 @@ import easyocr
 import re
 import random
 import json
-from core.models import SessionLocal, Trademark, Owner, MKTUClass
+from core.models import SessionLocal, Trademark, Owner, TrademarkMKTUClass
 from utils.utils import get_transliterated_name
 from datetime import datetime
 
@@ -223,9 +223,9 @@ class TrademarkParser:
 
                 for cls_data in mktu_classes:
                     class_number = cls_data["number"]
-                    mktu_obj = db.query(MKTUClass).filter_by(number=class_number).first()
+                    mktu_obj = db.query(TrademarkMKTUClass).filter_by(number=class_number).first()
                     if not mktu_obj:
-                        mktu_obj = MKTUClass(
+                        mktu_obj = TrademarkMKTUClass(
                             number=class_number,
                             description=cls_data["description"]
                         )

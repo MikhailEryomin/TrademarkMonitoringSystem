@@ -9,9 +9,11 @@ from strsimpy.levenshtein import Levenshtein
 load_dotenv()
 
 
-def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
+def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str, mktu_descriptions: list[str]) -> str:
     content = site_data.get('content_sample', '')
     contacts = json.dumps(site_data.get('contacts', {}), ensure_ascii=False)
+
+    mktu_text = ", ".join(mktu_descriptions)
 
     return f"""
             Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
@@ -33,6 +35,7 @@ def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
             5. "is_marketplace": Это крупный мультибрендовый ИНТЕРНЕТ-МАГАЗИН (как Ozon, Wildberries), где пользователь может положить товары разных брендов в корзину и оплатить? ВАЖНО: сайты с отзывами, статьями и купонами НЕ являются маркетплейсами (ставь false)
             6. "is_review_news_site": Является ли ОСНОВНАЯ цель сайта публикация независимых новостей, статей или агрегация отзывов? Если да, то owner_match = false.
             7. "is_fake_aggregator": Мимикрирует ли сайт под новости или отзывы, но при этом содержит агрессивные призывы к покупке, партнерские ссылки (affiliate), промокоды или явную рекламу конкретного магазина товаров "{tm_name}"?
+            8. "is_homogenous": Предлагает ли сайт товары, услуги или информацию, которые логически связаны с классами МКТУ бренда: [{mktu_text}]?
 
             Ответь СТРОГО в следующем формате без markdown разметки:
             {{
@@ -42,7 +45,8 @@ def _get_llm_prompt(site_data: dict, tm_name: str, owner_name: str) -> str:
                 "commercial_intent": true,
                 "is_marketplace": false,
                 "is_review_news_site": false,
-                "is_fake_aggregator": false
+                "is_fake_aggregator": false,
+                "is_homogenous": false
             }}
             """
 
@@ -172,7 +176,7 @@ class FeatureExtractor:
         print(f'[*] Однородность контента с классами МКТУ: {homogeneity}')
 
         # 4. Логический анализ (LLM)
-        prompt = _get_llm_prompt(site_data, tm_data['name'], tm_data['owner_name'])
+        prompt = _get_llm_prompt(site_data, tm_data['name'], tm_data['owner_name'], tm_data.get('mktu_descriptions', []))
         print(f'[*] Составление промпта LLM: {prompt}')
 
         try:
@@ -188,6 +192,7 @@ class FeatureExtractor:
             features['is_marketplace'] = 1 if llm_result.get('is_marketplace') else 0
             features['is_review_news_site'] = 1 if llm_result.get('is_review_news_site') else 0
             features['is_fake_agregator'] = 1 if llm_result.get('is_fake_agregator') else 0
+            features['is_homogenous'] = 1 if llm_result.get('is_homogenous') else 0
 
         except Exception as e:
             print(f"LLM Error: {e}")

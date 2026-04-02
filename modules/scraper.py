@@ -1,4 +1,6 @@
 import asyncio
+import socket
+
 import aiohttp
 import json
 import re
@@ -107,6 +109,8 @@ class AsyncScraper:
 
                         return metadata
 
+                except (aiohttp.ClientConnectorError, socket.gaierror, asyncio.TimeoutError):
+                    return None
                 except Exception as e:
                     print(f"  [!] Ошибка для {target_url}: {type(e).__name__}")
                     continue

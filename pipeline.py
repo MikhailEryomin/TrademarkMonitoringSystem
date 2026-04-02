@@ -68,15 +68,15 @@ class TrademarkPipeline:
     async def _scrape_domains(self, limit=500):
         """Шаг 2: Проверяет домены и собирает данные с 'живых' сайтов."""
 
-        #test_domains = list(self.domains)[:limit]
-        test_domains = [
-            'www.mvideo.ru'
-        ]
+        test_domains = list(self.domains)[:limit]
+        # test_domains = [
+        #     'www.ozon.ru'
+        # ]
 
         print(f"\n--- 2. Scraping ({len(test_domains)} domains) ---\n")
 
-        #self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
-        self.scraped_data = await self.scraper.run('SAMSUNG_TEST', test_domains)
+        self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
+        #self.scraped_data = await self.scraper.run('SAMSUNG_TEST', test_domains)
 
         print(self.scraped_data)
 
@@ -139,15 +139,9 @@ class TrademarkPipeline:
             print("No feature vectors to classify.")
             return
 
-        # Моковое обучение (Позже заменим на load_model)
-        train_x = [
-            {'domain_similarity': 0.8, 'homogeneity_score': 0.9, 'commercial_intent': 1, 'owner_match': 0},
-            {'domain_similarity': 1.0, 'owner_match': 1},
-            {'is_parked': 1, 'domain_similarity': 0.9},
-            {'domain_similarity': 0.1, 'is_review_news_site': 1}
-        ]
-        train_y = ['Нарушение', 'Легальный', 'Парковка', 'Легальный']
-        self.classifier.train(train_x, train_y)
+        # УБИРАЕМ ВЕСЬ БЛОК С train_x, train_y и clf.train() !
+        # Классификатор при инициализации (в __init__) уже загрузил
+        # обученную модель из файла model_dump.pkl благодаря методу load_model()
 
         for item in self.analyzed_data:
             verdict = self.classifier.predict(item['features'])
@@ -168,7 +162,7 @@ class TrademarkPipeline:
         self._update_status("parsing", "done")
 
         self._update_status("generating", "running")
-        # self._generate_domains()
+        self._generate_domains()
         self._update_status("generating", "done")
 
         self._update_status("scraping", "running")
@@ -180,22 +174,22 @@ class TrademarkPipeline:
         self._update_status("analyzing", "done")
 
         self._update_status("classifying", "running")
-        #self._classify_sites()
+        self._classify_sites()
         self._update_status("classifying", "done")
 
         self._update_status("reporting", "running")
-        #self._report_results()
+        self._report_results()
         self._update_status("reporting", "done")
 
 
 if __name__ == "__main__":
     # TM_NUMBER = "123553" # SAMSUNG
-    # TM_NUMBER = "524098" # AVITO
+    # TM_NUMBER = "919944" # AVITO
     # TM_NUMBER = "762980"  # СБЕР
-    # TM_NUMBER = "752380"  # OZON
+    TM_NUMBER = "752380"  # OZON
     # TM_NUMBER = "1198188" # ADIDAS
     # TM_NUMBER = "1026734" # TBANK
-    TM_NUMBER = "418225" # MVIDEO
+    # TM_NUMBER = "418225" # MVIDEO
     LIMIT = 200
 
     pipeline = TrademarkPipeline(tm_number=TM_NUMBER)
