@@ -27,8 +27,6 @@ HOMOGLYPHS = {
 
 VALID_CHARS = set(string.ascii_lowercase + string.digits + '-')
 
-
-
 # ------------------------------
 # Combosquatting word dictionary
 # ------------------------------
@@ -83,11 +81,12 @@ KEYWORDS = [
 ]
 
 PARKING_KEYWORDS = [
-    "parked domain", "domain owner", "domain is for sale", "buy this domain", "domain name is available",
+    "parked domain", "domain owner", "domain is for sale", "domain for sale", "buy this domain",
+    "domain name is available",
     "parked free", "godaddy", "dan.com", "sedo", "domain info",
     "domain has been registered", "future home of", "сайт находится в разработке",
     "хостинг", "домен продается", "купить этот домен", "reg.ru", "nic.ru",
-    "parking", "under construction", "coming soon"
+    "parking", "under construction", "coming soon", "владелец домена"
 ]
 
 # heuristic data 

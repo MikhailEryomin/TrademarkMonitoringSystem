@@ -1,27 +1,27 @@
+﻿import logging
 from datetime import datetime
-from sqlalchemy import (
-    create_engine, Column, Integer, String, Date, Text, ForeignKey,
-    DateTime, Boolean, Float, JSON, Table
-)
-from sqlalchemy.orm import relationship, declarative_base, sessionmaker
+
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Table, Text, create_engine
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+
+logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 DATABASE_URL = "postgresql://postgres:postgres@localhost:5430/trademarks"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# ========================================================
-# НОВАЯ СВЯЗУЮЩАЯ ТАБЛИЦА (Association Table)
-# ========================================================
 trademark_mktu_association = Table(
-    'trademark_mktu_association', Base.metadata,
-    Column('trademark_id', Integer, ForeignKey('trademarks.id'), primary_key=True),
-    Column('mktu_class_id', Integer, ForeignKey('mktu_classes.id'), primary_key=True)
+    "trademark_mktu_association",
+    Base.metadata,
+    Column("trademark_id", Integer, ForeignKey("trademarks.id"), primary_key=True),
+    Column("mktu_class_id", Integer, ForeignKey("mktu_classes.id"), primary_key=True),
 )
 
 
 class Trademark(Base):
-    __tablename__ = 'trademarks'
+    __tablename__ = "trademarks"
+
     id = Column(Integer, primary_key=True)
     registration_number = Column(String(50), unique=True, index=True, nullable=True)
     name = Column(String(255), index=True)
@@ -31,47 +31,60 @@ class Trademark(Base):
     status = Column(String(200), nullable=True)
     sign_type = Column(String(100), nullable=True)
     image_url = Column(String(512))
-    owner_id = Column(Integer, ForeignKey('owners.id'), nullable=False)
+    owner_id = Column(Integer, ForeignKey("owners.id"), nullable=False)
 
     owner = relationship("Owner", back_populates="trademarks")
-
-    mktu_classes = relationship("TrademarkMKTUClass", back_populates="trademark")
+    mktu_classes = relationship(
+        "MKTUClass",
+        secondary=trademark_mktu_association,
+        back_populates="trademarks",
+    )
 
     def __repr__(self):
         return f"<Trademark(id={self.id}, name='{self.name}')>"
 
 
 class Owner(Base):
-    __tablename__ = 'owners'
+    __tablename__ = "owners"
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, index=True)
+
     trademarks = relationship("Trademark", back_populates="owner")
 
     def __repr__(self):
         return f"<Owner(id={self.id}, name='{self.name}')>"
 
 
-class TrademarkMKTUClass(Base):
-    __tablename__ = 'mktu_classes'
-    id = Column(Integer, primary_key=True)
-    number = Column(Integer, index=True)  # Номер класса (9, 35...)
-    description = Column(Text)  # Конкретное описание из ФИПС для ЭТОГО знака
+class MKTUClass(Base):
+    __tablename__ = "mktu_classes"
 
-    trademark_id = Column(Integer, ForeignKey('trademarks.id'))
-    trademark = relationship("Trademark", back_populates="mktu_classes")
+    id = Column(Integer, primary_key=True)
+    number = Column(Integer, unique=True, nullable=False, index=True)
+    description = Column(Text, nullable=False)
+
+    trademarks = relationship(
+        "Trademark",
+        secondary=trademark_mktu_association,
+        back_populates="mktu_classes",
+    )
+
+    def __repr__(self):
+        return f"<MKTUClass(number={self.number})>"
 
 
 class ScanResult(Base):
-    # ... (эта модель остается без изменений) ...
-    __tablename__ = 'scan_results'
+    __tablename__ = "scan_results"
+
     id = Column(Integer, primary_key=True)
-    trademark_id = Column(Integer, ForeignKey('trademarks.id'), nullable=False)
+    trademark_id = Column(Integer, ForeignKey("trademarks.id"), nullable=False)
     domain_name = Column(String(255), index=True, nullable=False)
     url = Column(String(512), nullable=False)
     scan_date = Column(DateTime, default=datetime.now)
     features = Column(JSON, nullable=False)
     predicted_category = Column(String(50), nullable=False)
     confidence = Column(Float, nullable=True)
+
     trademark = relationship("Trademark")
 
     def __repr__(self):
@@ -79,10 +92,6 @@ class ScanResult(Base):
 
 
 def create_db_and_tables():
-    print("Creating database and tables...")
+    logger.info("Creating database tables")
     Base.metadata.create_all(bind=engine)
-    print("Database and tables created successfully.")
-
-
-if __name__ == "__main__":
-    create_db_and_tables()
+    logger.info("Database tables created")

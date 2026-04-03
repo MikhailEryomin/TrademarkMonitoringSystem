@@ -1,24 +1,38 @@
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+﻿import logging
 import os
-from fastapi import FastAPI, BackgroundTasks, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
 from datetime import datetime
+from typing import Optional
 
-from core.models import SessionLocal, Trademark, ScanResult
-from pipeline import TrademarkPipeline
+from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, ConfigDict, Field
+
+from core.models import ScanResult, SessionLocal, Trademark
 from modules.tm_parser import TrademarkParser
+from pipeline import TrademarkPipeline
 
-# Инициализируем приложение FastAPI
+
+def configure_logging(level: int = logging.INFO):
+    root_logger = logging.getLogger()
+    if not root_logger.handlers:
+        logging.basicConfig(
+            level=level,
+            format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+        )
+    else:
+        root_logger.setLevel(level)
+
+
+configure_logging()
+
 app = FastAPI(
     title="Trademark Monitoring API",
-    description="API для системы мониторинга нарушений товарных знаков",
-    version="1.2.0"
+    description="API for trademark infringement monitoring",
+    version="1.2.0",
 )
 
-# Настраиваем CORS (чтобы фронтенд мог делать запросы с любого порта)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,9 +42,6 @@ app.add_middleware(
 )
 
 
-# ==========================================
-# Pydantic Модели (Схемы ответа)
-# ==========================================
 class TrademarkResponse(BaseModel):
     registration_number: str
     name: str
@@ -50,118 +61,99 @@ class ScanResultResponse(BaseModel):
     is_parked: bool
     domain_similarity: Optional[float]
     content_homogeneity: Optional[float]
-    features: dict = {}
+    features: dict = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
 
 
-# ==========================================
-# Глобальное состояние системы (для блокировки и UI)
-# ==========================================
+SCAN_STAGE_NAMES = ("parsing", "generating", "scraping", "analyzing", "classifying", "reporting")
 scan_state = {
     "is_running": False,
     "current_tm": None,
-    "stages": {
-        "parsing": "pending",
-        "generating": "pending",
-        "scraping": "pending",
-        "analyzing": "pending",
-        "classifying": "pending",
-        "reporting": "pending"
-    }
+    "stages": {stage: "pending" for stage in SCAN_STAGE_NAMES},
 }
 
-# ==========================================
-# Эндпоинты
-# ==========================================
-if not os.path.exists("static"):
-    os.makedirs("static")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+STATIC_DIR = "static"
+INDEX_FILE = os.path.join(STATIC_DIR, "index.html")
+if not os.path.exists(STATIC_DIR):
+    os.makedirs(STATIC_DIR)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+def _reset_scan_state(tm_number: str):
+    scan_state["is_running"] = True
+    scan_state["current_tm"] = tm_number
+    scan_state["stages"] = {stage: "pending" for stage in SCAN_STAGE_NAMES}
+
+
+def _build_trademark_response(tm: Trademark) -> dict:
+    return {
+        "registration_number": tm.registration_number,
+        "name": tm.name,
+        "owner_name": tm.owner.name if tm.owner else "Unknown",
+        "status": tm.status or "Unknown",
+    }
+
+
+def _build_scan_result_response(result: ScanResult) -> dict:
+    features = result.features or {}
+    return {
+        "id": result.id,
+        "url": result.url,
+        "domain_name": result.domain_name,
+        "predicted_category": result.predicted_category,
+        "confidence": result.confidence,
+        "scan_date": result.scan_date,
+        "is_parked": bool(features.get("is_parked", False)),
+        "domain_similarity": features.get("domain_similarity"),
+        "content_homogeneity": features.get("homogeneity_score"),
+        "features": features,
+    }
 
 
 @app.get("/")
 def read_root():
-    """Отдает главную HTML-страницу."""
-    return FileResponse("static/index.html")
+    return FileResponse(INDEX_FILE)
 
 
 @app.get("/api/trademark/{tm_number}")
 def get_tm_info(tm_number: str):
-    """Предварительный парсинг ТЗ для показа пользователю перед сканированием."""
-    parser = TrademarkParser()
     try:
-        # Используем твой готовый метод кэш/парсинга
-        tm_data = parser.get_or_fetch_trademark(tm_number)
-        return tm_data
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Ошибка поиска ТЗ: {str(e)}")
+        return TrademarkParser().get_or_fetch_trademark(tm_number)
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail=f"Trademark lookup failed: {exc}") from exc
 
 
 @app.get("/api/status")
 def get_scan_status():
-    """Отдает текущий статус запущенного пайплайна."""
     return scan_state
 
 
-@app.get("/api/trademarks", response_model=List[TrademarkResponse])
+@app.get("/api/trademarks", response_model=list[TrademarkResponse])
 def get_all_trademarks():
-    """Возвращает список всех товарных знаков из базы данных (Кэша)."""
     with SessionLocal() as db:
         trademarks = db.query(Trademark).all()
-        # Собираем данные в список словарей, чтобы Pydantic мог их распарсить
-        results = []
-        for tm in trademarks:
-            results.append({
-                "registration_number": tm.registration_number,
-                "name": tm.name,
-                "owner_name": tm.owner.name if tm.owner else "Unknown",
-                "status": tm.status or "Unknown"
-            })
-        return results
+        return [_build_trademark_response(tm) for tm in trademarks]
 
 
-@app.get("/api/results/{tm_number}", response_model=List[ScanResultResponse])
+@app.get("/api/results/{tm_number}", response_model=list[ScanResultResponse])
 def get_scan_results(tm_number: str):
-    """Возвращает результаты последнего сканирования для конкретного ТЗ."""
     with SessionLocal() as db:
-        # Ищем ТЗ
-        tm = db.query(Trademark).filter_by(registration_number=tm_number).first()
-        if not tm:
-            raise HTTPException(status_code=404, detail="Товарный знак не найден в базе данных.")
+        trademark = db.query(Trademark).filter_by(registration_number=tm_number).first()
+        if not trademark:
+            raise HTTPException(status_code=404, detail="Trademark not found in database.")
 
-        # Достаем все результаты сканирования для этого ТЗ
-        results = db.query(ScanResult).filter_by(trademark_id=tm.id).order_by(ScanResult.predicted_category).all()
+        results = (
+            db.query(ScanResult)
+            .filter_by(trademark_id=trademark.id)
+            .order_by(ScanResult.predicted_category)
+            .all()
+        )
+        return [_build_scan_result_response(result) for result in results]
 
-        # Преобразуем данные базы в схему ответа
-        response_data = []
-        for res in results:
-            response_data.append({
-                "id": res.id,
-                "url": res.url,
-                "domain_name": res.domain_name,
-                "predicted_category": res.predicted_category,
-                "confidence": res.confidence,
-                "scan_date": res.scan_date,
-                "is_parked": res.features.get("is_parked", False) if res.features else False,
-                "domain_similarity": res.features.get("domain_similarity") if res.features else None,
-                "content_homogeneity": res.features.get("homogeneity_score") if res.features else None,
-                "features": res.features if res.features else {}
-            })
-        return response_data
-
-
-# --- ЛОГИКА АСИНХРОННОГО ЗАПУСКА ПАЙПЛАЙНА ---
 
 async def run_pipeline_task(tm_number: str):
-    """
-    Асинхронная задача для запуска пайплайна в фоне.
-    """
-
-    scan_state["is_running"] = True
-    scan_state["current_tm"] = tm_number
-
-    for key in scan_state["stages"]:
-        scan_state["stages"][key] = "pending"
+    _reset_scan_state(tm_number)
 
     def update_callback(stage: str, status: str):
         scan_state["stages"][stage] = status
@@ -169,25 +161,17 @@ async def run_pipeline_task(tm_number: str):
     try:
         pipeline = TrademarkPipeline(tm_number=tm_number, status_callback=update_callback)
         await pipeline.run()
-    except Exception as e:
-        print(f"[!] Ошибка при фоновом выполнении пайплайна для ТЗ {tm_number}: {e}")
     finally:
         scan_state["is_running"] = False
 
 
 @app.post("/api/scan/{tm_number}")
 async def start_scan(tm_number: str, background_tasks: BackgroundTasks):
-    """
-    Запускает процесс поиска нарушений для указанного номера ТЗ.
-    Работает асинхронно в фоне.
-    """
-    # Добавляем именно асинхронную функцию в фон
     background_tasks.add_task(run_pipeline_task, tm_number)
-
     return {
         "status": "accepted",
-        "message": f"Сканирование для ТЗ {tm_number} успешно запущено в фоновом режиме.",
-        "tm_number": tm_number
+        "message": f"Scan for trademark {tm_number} has been started in the background.",
+        "tm_number": tm_number,
     }
 
 

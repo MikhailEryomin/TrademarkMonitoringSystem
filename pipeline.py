@@ -1,168 +1,184 @@
-import asyncio
+﻿import asyncio
+import io
+import json
+import logging
+import socket
+import sys
+from typing import Callable
+import aiohttp
 
-from modules.generator import generate_domains
-from modules.scraper import AsyncScraper
 from modules.analyzer import FeatureExtractor
 from modules.classifier import TrademarkClassifier
-from modules.tm_parser import TrademarkParser
-from modules.reporter import Reporter
+from modules.generator import generate_domains
 from modules.osint import check_whois, validate_inn
-import socket, aiohttp
-import json  # debug
+from modules.reporter import Reporter
+from modules.scraper import AsyncScraper
+from modules.tm_parser import TrademarkParser
+
+
+def configure_logging(level: int = logging.INFO):
+    root_logger = logging.getLogger()
+    if not root_logger.handlers:
+        logging.basicConfig(
+            level=level,
+            format="| %(levelname)s | %(name)s | %(message)s",
+            stream=sys.stdout
+        )
+    else:
+        root_logger.setLevel(level)
+
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 
 def silence_event_loop_exceptions(loop, context):
-    """Глушит системный спам об ошибках DNS для несуществующих доменов."""
-    exception = context.get('exception')
+    """Suppress noisy DNS errors for non-existent domains."""
+    exception = context.get("exception")
+    message = context.get("message", "")
+
     if isinstance(exception, (socket.gaierror, aiohttp.ClientConnectorError)):
         return
-    msg = context.get('message', '')
-    if "getaddrinfo failed" in str(msg) or "getaddrinfo failed" in str(exception):
+    if "getaddrinfo failed" in str(message) or "getaddrinfo failed" in str(exception):
         return
+
     loop.default_exception_handler(context)
 
 
 class TrademarkPipeline:
-    """
-    Класс-оркестратор для управления полным циклом поиска и анализа нарушений товарного знака.
-    """
+    """Orchestrates the full trademark monitoring flow."""
+
     DEFAULT_SCRAPER_LIMIT = 500
 
-    def _update_status(self, stage: str, status: str):
-        """Вспомогательный метод для отправки статуса"""
-        if self.status_callback:
-            self.status_callback(stage, status)
-
-    def __init__(self, tm_number: str, status_callback=None):
+    def __init__(self, tm_number: str, status_callback: Callable[[str, str], None] | None = None):
         self.tm_number = tm_number
         self.status_callback = status_callback
-        self.tm_db = {}
-        self.domains = []
-        self.scraped_data = []
-        self.analyzed_data = []
-        self.predictions = []
+        self.tm_data: dict = {}
+        self.domains: list[str] = []
+        self.scraped_data: list[dict] = []
+        self.analyzed_data: list[dict] = []
+        self.predictions: list[dict] = []
 
-        # Инициализация модулей
         self.parser = TrademarkParser()
         self.scraper = AsyncScraper()
         self.analyzer = FeatureExtractor()
         self.classifier = TrademarkClassifier()
         self.reporter = Reporter()
 
+    def _update_status(self, stage: str, status: str):
+        logger.info("Stage %s -> %s", stage, status)
+        if self.status_callback:
+            self.status_callback(stage, status)
+
     def _parse_trademark(self):
-        """Шаг 0: Получение данных о товарном знаке (Из БД или ФИПС)."""
-        print("\n\n--- 0. Trademark Parsing & DB Caching ---\n")
-        self.tm_db = self.parser.get_or_fetch_trademark(self.tm_number)
-        print(json.dumps(self.tm_db, indent=4, ensure_ascii=False))
+        self.tm_data = self.parser.get_or_fetch_trademark(self.tm_number)
+        logger.info("Loaded trademark data for %s", self.tm_number)
+        logger.info("Trademark payload:\n%s", json.dumps(self.tm_data, ensure_ascii=False, indent=2))
 
     def _generate_domains(self):
-        """Шаг 1: Генерирует список потенциально нарушающих доменов."""
-        # Берем первое слово для генерации доменов (по латинице)
-        full_name = (self.tm_db.get("name_lat") or "").strip()
-        brand_for_domains = full_name.split()[0] if full_name else "unknown"
+        self.domains = generate_domains(
+            brand_name=self.tm_data.get("name_lat", ""),
+            mktu_classes=self.tm_data.get("mktu_nums", []),
+        )
+        logger.info("Generated %s candidate domains for %s", len(self.domains), self.tm_number)
+        logger.info("First generated domains: %s", self.domains[:20])
 
-        print(f"\n--- 1. Domain Generation for '{self.tm_db['name']}' (using '{brand_for_domains}') ---")
-        self.domains = generate_domains(brand_for_domains, self.tm_db["mktu_nums"])
-        print(f"Generated {len(self.domains)} domains total.")
+    async def _scrape_domains(self, limit: int | None = None):
+        #domains_to_check = self.domains[:limit] if limit else self.domains
+        domains_to_check = [
+            'avito.ru'
+        ]
+        logger.info("Starting scraper for %s domains", len(domains_to_check))
+        logger.info("Domains passed to scraper: %s", domains_to_check)
+        self.scraped_data = await self.scraper.run(self.tm_data.get("name_lat", "unknown"), domains_to_check)
+        logger.info("Scraped %s active or parked websites", len(self.scraped_data))
+        logger.info("Scraper output:\n%s", json.dumps(self.scraped_data, ensure_ascii=False, indent=2))
 
-    async def _scrape_domains(self, limit=500):
-        """Шаг 2: Проверяет домены и собирает данные с 'живых' сайтов."""
+    @staticmethod
+    def _extract_domain(url: str) -> str:
+        return url.replace("https://", "").replace("http://", "").split("/")[0]
 
-        test_domains = list(self.domains)[:limit]
-        # test_domains = [
-        #     'www.ozon.ru'
-        # ]
-
-        print(f"\n--- 2. Scraping ({len(test_domains)} domains) ---\n")
-
-        self.scraped_data = await self.scraper.run(self.tm_db["name_lat"], test_domains)
-        #self.scraped_data = await self.scraper.run('SAMSUNG_TEST', test_domains)
-
-        print(self.scraped_data)
-
-        print(f"[Scraper] Scraped {len(self.scraped_data)} active/parked sites.")
+    @staticmethod
+    def _build_osint_payload(site: dict, whois_info: dict, inn_info: dict) -> dict:
+        inns = site.get("contacts", {}).get("inn", [])
+        return {
+            "is_private_whois": 1 if whois_info.get("is_private") else 0,
+            "is_fake_inn": 1 if inns and not inn_info.get("exists") else 0,
+            "osint": {
+                "contacts": site.get("contacts", {}),
+                "whois": whois_info,
+                "inn_validation": inn_info,
+            },
+        }
 
     async def _analyze_sites(self):
-
-        print("\n--- 3. Analysis & Feature Extraction ---")
         if not self.scraped_data:
-            print("[Analyzer] No sites to analyze.")
+            logger.info("No scraped websites to analyze")
             return
 
         for site in self.scraped_data:
-            url = site['url']
-            domain = url.replace('https://', '').replace('http://', '').split('/')[0]
-
-            print(f"\n➤ АНАЛИЗ САЙТА: {url}")
-
-            # 1. Запрашиваем WHOIS
+            logger.info("Starting analysis for %s", site["url"])
+            domain = self._extract_domain(site["url"])
             whois_info = check_whois(domain)
-            print(f"[*] WHOIS: Владелец = {whois_info.get('registrant_org')}, Private = {whois_info.get('is_private')}")
+            inns = site.get("contacts", {}).get("inn", [])
+            inn_info = validate_inn(inns[0]) if inns else {}
 
-            # 2. Проверяем первый найденный ИНН (если есть)
-            inns = site['contacts'].get('inn', [])
-            inn_info = {}
-            if inns:
-                inn_info = validate_inn(inns[0])
-                print(
-                    f"[*] DaData (ИНН {inns[0]}): Найдено = {inn_info.get('exists')}, Статус = {inn_info.get('status')}")
-            else:
-                print("[*] DaData: ИНН на сайте не найден.")
-            site['inn_validation'] = inn_info
+            logger.info(
+                "OSINT summary for %s: registrant=%s, private=%s, inns=%s, inn_validation=%s",
+                site["url"],
+                whois_info.get("registrant_org"),
+                whois_info.get("is_private"),
+                inns,
+                inn_info,
+            )
 
-            # 3. Базовый анализ (LLM + BERT)
-            features = await asyncio.to_thread(self.analyzer.analyze_site, site, self.tm_db)
+            features = await asyncio.to_thread(self.analyzer.analyze_site, site, self.tm_data)
+            features.update(self._build_osint_payload(site, whois_info, inn_info))
 
-            # 4. Добавляем OSINT фичи в вектор для классификатора!
-            features['is_private_whois'] = 1 if whois_info['is_private'] else 0
-            features['is_fake_inn'] = 1 if inns and not site.get('inn_validation', {}).get('exists') else 0
-
-            features['osint'] = {
-                'contacts': site.get('contacts', {}),
-                'whois': whois_info,
-                'inn_validation': inn_info
-            }
+            logger.info("Final feature vector for %s:\n%s", site["url"],
+                        json.dumps(features, ensure_ascii=False, indent=2))
 
             self.analyzed_data.append({
-                'url': url,
-                'features': features
+                "url": site["url"],
+                "features": features,
             })
 
-            print(f"[*] Итоговый вектор признаков для классификатора:")
-            debug_features = {k: v for k, v in features.items() if k != 'osint'}
-            print(json.dumps(debug_features, indent=2, ensure_ascii=False))
+        logger.info("Prepared feature vectors for %s websites", len(self.analyzed_data))
 
     def _classify_sites(self):
-        """Шаг 4: Классифицирует векторы признаков, вынося вердикт по каждому сайту."""
-        print("\n--- 4. Classification ---")
         if not self.analyzed_data:
-            print("No feature vectors to classify.")
+            logger.info("No analyzed websites to classify")
             return
 
-        # УБИРАЕМ ВЕСЬ БЛОК С train_x, train_y и clf.train() !
-        # Классификатор при инициализации (в __init__) уже загрузил
-        # обученную модель из файла model_dump.pkl благодаря методу load_model()
-
+        self.predictions = []
         for item in self.analyzed_data:
-            verdict = self.classifier.predict(item['features'])
-            self.predictions.append(verdict)
+            prediction = self.classifier.predict(item["features"])
+            self.predictions.append(prediction)
+            logger.info(
+                "Verdict for %s: %s",
+                item["url"],
+                json.dumps(prediction, ensure_ascii=False),
+            )
+
+        logger.info("Generated %s classification results", len(self.predictions))
 
     def _report_results(self):
-        """Шаг 5: Вызывает модуль Reporter для сохранения и вывода результатов."""
+        logger.info("Reporting %s classification results", len(self.predictions))
         self.reporter.report_results(
             tm_number=self.tm_number,
             analyzed_data=self.analyzed_data,
-            predictions=self.predictions
+            predictions=self.predictions,
         )
 
     async def run(self):
-        """Главный метод запуска пайплайна с отслеживанием статусов."""
+        logger.info("Pipeline started for trademark %s", self.tm_number)
+
         self._update_status("parsing", "running")
         self._parse_trademark()
         self._update_status("parsing", "done")
 
         self._update_status("generating", "running")
-        self._generate_domains()
+        #self._generate_domains()
         self._update_status("generating", "done")
 
         self._update_status("scraping", "running")
@@ -181,16 +197,8 @@ class TrademarkPipeline:
         self._report_results()
         self._update_status("reporting", "done")
 
+        logger.info("Pipeline finished for trademark %s", self.tm_number)
+
 
 if __name__ == "__main__":
-    # TM_NUMBER = "123553" # SAMSUNG
-    # TM_NUMBER = "919944" # AVITO
-    # TM_NUMBER = "762980"  # СБЕР
-    TM_NUMBER = "752380"  # OZON
-    # TM_NUMBER = "1198188" # ADIDAS
-    # TM_NUMBER = "1026734" # TBANK
-    # TM_NUMBER = "418225" # MVIDEO
-    LIMIT = 200
-
-    pipeline = TrademarkPipeline(tm_number=TM_NUMBER)
-    asyncio.run(pipeline.run())
+    asyncio.run(TrademarkPipeline(tm_number="919944").run())

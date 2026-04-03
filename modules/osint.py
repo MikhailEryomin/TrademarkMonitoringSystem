@@ -1,62 +1,55 @@
-import whois
-from dotenv import load_dotenv
-from dadata import Dadata
+﻿import logging
 import os
 
+import whois
+from dadata import Dadata
+from dotenv import load_dotenv
+
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
 DADATA_API_KEY = os.getenv("DADATA_API_KEY")
+PRIVATE_WHOIS_MARKERS = ("private", "privacy", "protection", "redacted")
 
 
 def check_whois(domain: str) -> dict:
-    """Получает данные администратора домена."""
+    """Return a compact WHOIS summary for a domain."""
     try:
-        w = whois.whois(domain)
+        whois_data = whois.whois(domain)
+        organization = whois_data.org[0] if isinstance(whois_data.org, list) else whois_data.org
+        emails = whois_data.emails if isinstance(whois_data.emails, list) else [whois_data.emails] if whois_data.emails else []
 
-        # Whois часто возвращает списки, берем первые значения
-        org = w.org[0] if isinstance(w.org, list) else w.org
-        emails = w.emails if isinstance(w.emails, list) else [w.emails] if w.emails else []
-
-        # Эвристика: если org пустой или содержит слова "Private", "Protection" - это частное лицо
-        is_private = False
-        if not org or any(word in str(org).lower() for word in ['private', 'privacy', 'protection', 'redacted']):
-            is_private = True
-            org = "Private Person"
-
+        is_private = not organization or any(marker in str(organization).lower() for marker in PRIVATE_WHOIS_MARKERS)
         return {
-            "registrant_org": org,
-            "emails": [e for e in emails if e],  # Очистка от None
-            "is_private": is_private
+            "registrant_org": "Private Person" if is_private else organization,
+            "emails": [email for email in emails if email],
+            "is_private": is_private,
         }
-    except Exception as e:
-        print(f"WHOIS Error for {domain}: {e}")
+    except Exception as exc:
+        logger.warning("WHOIS lookup failed for %s: %s", domain, exc)
         return {"registrant_org": "Unknown", "emails": [], "is_private": True}
 
 
 def validate_inn(inn: str) -> dict:
-    """Проверяет ИНН через ФНС и возвращает статус и адрес компании."""
+    """Validate INN through DaData."""
     if not DADATA_API_KEY or not inn:
         return {"exists": False}
 
-    with Dadata(DADATA_API_KEY, DADATA_API_KEY) as dadata:
-        try:
-            # Ищем компанию по ИНН
+    try:
+        with Dadata(DADATA_API_KEY, DADATA_API_KEY) as dadata:
             result = dadata.find_by_id("party", inn)
+    except Exception as exc:
+        logger.warning("DaData lookup failed for INN %s: %s", inn, exc)
+        return {"exists": False}
 
-            if not result:
-                return {"exists": False, "status": "NOT_FOUND"}
+    if not result:
+        return {"exists": False, "status": "NOT_FOUND"}
 
-            company = result[0]['data']
-            return {
-                "exists": True,
-                "name": company['name']['short_with_opf'],  # ООО "Ромашка"
-                "status": company['state']['status'],  # ACTIVE, LIQUIDATING...
-                "address": company['address']['value']  # Полный адрес
-            }
-        except Exception:
-            return {"exists": False}
-
-
-#whois_info = check_whois('ozon-soft.com')
-#inn_info = validate_inn('760211629532')
-#print(whois_info)
-#print(inn_info)
+    company = result[0]["data"]
+    return {
+        "exists": True,
+        "name": company["name"]["short_with_opf"],
+        "status": company["state"]["status"],
+        "address": company["address"]["value"],
+    }
