@@ -2,13 +2,13 @@
 import logging
 from datetime import datetime
 
+import utils.utils
 from core.models import ScanResult, SessionLocal, Trademark
 
 logger = logging.getLogger(__name__)
 
 
 class Reporter:
-    """Persist scan results and emit concise logs."""
 
     def report_results(self, tm_number: str, analyzed_data: list, predictions: list):
         if not predictions:
@@ -38,7 +38,7 @@ class Reporter:
 
     @staticmethod
     def _save_or_update_scan_result(db, trademark_id: int, url: str, features: dict, prediction: dict):
-        domain_name = url.replace("https://", "").replace("http://", "").split("/")[0]
+        domain = utils.utils.extract_domain(url)
         existing_scan = db.query(ScanResult).filter_by(trademark_id=trademark_id, url=url).first()
 
         if existing_scan:
@@ -53,7 +53,7 @@ class Reporter:
             ScanResult(
                 trademark_id=trademark_id,
                 url=url,
-                domain_name=domain_name,
+                domain_name=domain,
                 features=features,
                 predicted_category=prediction["class"],
                 confidence=prediction["confidence"],

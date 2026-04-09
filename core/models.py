@@ -1,10 +1,6 @@
-﻿import logging
-from datetime import datetime
-
+﻿from datetime import datetime
 from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Table, Text, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-
-logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 DATABASE_URL = "postgresql://postgres:postgres@localhost:5430/trademarks"
@@ -92,6 +88,10 @@ class ScanResult(Base):
 
 
 def create_db_and_tables():
-    logger.info("Creating database tables")
+    print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created")
+    print("Database tables created")
+
+
+if __name__ == "__main__":
+    create_db_and_tables()

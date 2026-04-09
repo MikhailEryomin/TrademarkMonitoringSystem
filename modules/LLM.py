@@ -30,6 +30,7 @@ def query(content: str, model: str = DEFAULT_MODEL) -> dict | None:
             json={
                 "model": model,
                 "messages": [{"role": "user", "content": content}],
+                "max_tokens": 300
             },
             timeout=REQUEST_TIMEOUT,
         )
@@ -40,3 +41,8 @@ def query(content: str, model: str = DEFAULT_MODEL) -> dict | None:
         if 'response' in locals() and response is not None:
             logger.warning("OpenRouter response body: %s", response.text[:200])
         return None
+
+
+# msg = "Знаешь ли ты что такое 9 класс МКТУ согласно Ниццкой классификации товаров и услуг?"
+# response = query(msg)
+# print(response)

@@ -9,7 +9,7 @@ const API_BASE_URL = "http://localhost:8000/api";
         if (!tmNumber) return alert("Введите номер ТЗ");
 
         const btn = document.getElementById('btnFindTM');
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Ищем...`;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Поиск...`;
         btn.disabled = true;
 
         try {
@@ -124,7 +124,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 
     async function loadCurrentResults(tmNumber) {
         try {
-            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}`);
+            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}?latest=true`);
             const data = await res.json();
 
             const tbody = document.querySelector('#currentResultsTable tbody');
@@ -210,7 +210,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 
         // 2. Вставляем чистые ML-признаки (убрав блок osint, чтобы не мусорить на экране)
         const mlFeatures = { ...item.features };
-        delete mlFeatures.osint; // Удаляем из отображения JSON, т.к. мы уже отрисовали это выше
+        //delete mlFeatures.osint; // Удаляем из отображения JSON, т.к. мы уже отрисовали это выше
         document.getElementById('modalFeaturesJson').innerText = JSON.stringify(mlFeatures, null, 2);
 
         // 3. Показываем модальное окно
@@ -239,15 +239,28 @@ const API_BASE_URL = "http://localhost:8000/api";
             }
 
             data.forEach(item => {
+                // 1. Кодируем весь объект для передачи в модальное окно
+                const itemJson = encodeURIComponent(JSON.stringify(item));
+
+                // Форматируем дату красиво
+                const dateStr = new Date(item.scan_date).toLocaleString('ru-RU', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                // 2. Отрисовываем строку с кнопкой "Детали"
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.id}</td>
-                    <td class="fw-bold">${item.domain_name}</td>
-                    <td><a href="${item.url}" target="_blank">${item.url}</a></td>
-                    <td><span class="badge ${getBadgeClass(item.predicted_category)}">${item.predicted_category}</span></td>
+                    <td><a href="${item.url}" target="_blank" class="text-decoration-none fw-bold">${item.domain_name}</a></td>
+                    <td><span class="badge ${getBadgeClass(item.predicted_category)} fs-6">${item.predicted_category}</span></td>
                     <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
-                    <td>${item.domain_similarity ? item.domain_similarity.toFixed(2) : '-'}</td>
-                    <td class="text-muted small">${new Date(item.scan_date).toLocaleString('ru-RU')}</td>
+                    <td class="text-muted small">${dateStr}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemJson}')">
+                            <i class="bi bi-info-circle"></i> Детали
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });

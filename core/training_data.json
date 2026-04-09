@@ -6,17 +6,35 @@
             "is_redirect": 0,
             "is_parked": 0,
             "has_contacts_info": 0,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0.3144,
+            "domain_similarity": 0.0,
+            "homogeneity_score": 0.5293,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
-            "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Limited Liability Company \"WebSiteSoft\"",
+                    "emails": [
+                        "abuse@regtime.net",
+                        "abuse@otzovik.com"
+                    ],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -27,16 +45,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4243,
+            "homogeneity_score": 0.5045,
             "has_legal_info": 1,
-            "has_physical_address": 0,
+            "has_physical_address": 1,
             "owner_match": 1,
             "commercial_intent": 1,
             "is_marketplace": 1,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "OBSHHESTVO S OGRANICHENNOJ OTVETSTVENNOST`YU \"KEX EKOMMERCz\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -47,16 +80,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3085,
-            "has_legal_info": 1,
+            "homogeneity_score": 0.4221,
+            "has_legal_info": 0,
             "has_physical_address": 0,
-            "owner_match": 1,
+            "owner_match": 0,
             "commercial_intent": 1,
-            "is_marketplace": 0,
+            "is_marketplace": 1,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -67,16 +115,33 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4555,
+            "homogeneity_score": 0.5222,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@irecommend.ru"
+                    ],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "RECOMMENDER LLC",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -87,16 +152,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5172,
+            "homogeneity_score": 0.5391,
             "has_legal_info": 0,
             "has_physical_address": 0,
-            "owner_match": 1,
-            "commercial_intent": 1,
+            "owner_match": 0,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 1,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -107,16 +187,39 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.418,
+            "homogeneity_score": 0.5342,
             "has_legal_info": 1,
-            "has_physical_address": 0,
+            "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "danormov@mail.ru",
+                        "electrotechnologies23@gmail.com"
+                    ],
+                    "phones": [
+                        "+7 (918) 369-42-03"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@reg.ru",
+                        "ozon23.com@regprivate.ru"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -126,17 +229,32 @@
             "is_redirect": 0,
             "is_parked": 0,
             "has_contacts_info": 0,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0.3577,
+            "domain_similarity": 0.1538,
+            "homogeneity_score": 0.4193,
             "has_legal_info": 0,
-            "has_physical_address": 0,
-            "owner_match": 1,
-            "commercial_intent": 1,
+            "has_physical_address": 1,
+            "owner_match": 0,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -146,8 +264,8 @@
             "is_redirect": 0,
             "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
-            "homogeneity_score": 0,
+            "domain_similarity": 0.87,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -155,6 +273,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -164,9 +284,9 @@
         "label": "Подозрительный",
         "features": {
             "is_redirect": 0,
-            "is_parked": 0,
+            "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
+            "domain_similarity": 0.87,
             "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
@@ -174,7 +294,9 @@
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -187,16 +309,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3937,
+            "homogeneity_score": 0.5029,
             "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "8 (495) 975-76-73"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "uvaroff.dmitrij.doktorholod@yandex.ru"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -206,8 +347,8 @@
             "is_redirect": 0,
             "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
-            "homogeneity_score": 0,
+            "domain_similarity": 0.87,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -215,6 +356,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -224,9 +367,9 @@
         "label": "Парковка",
         "features": {
             "is_redirect": 0,
-            "is_parked": 0,
+            "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
+            "domain_similarity": 0.87,
             "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
@@ -234,7 +377,9 @@
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 0,
             "is_fake_inn": 0
         }
@@ -247,16 +392,36 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.1087,
+            "homogeneity_score": 0.1906,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@qs-visa.de"
+                    ],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@united-domains.de",
+                        "whois@united-domains.de"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -266,8 +431,8 @@
             "is_redirect": 0,
             "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
-            "homogeneity_score": 0,
+            "domain_similarity": 0.87,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -275,6 +440,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -284,10 +451,10 @@
         "label": "Парковка",
         "features": {
             "is_redirect": 0,
-            "is_parked": 0,
+            "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
-            "homogeneity_score": 0,
+            "domain_similarity": 0.0,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -295,8 +462,25 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "phones": [],
+                    "emails": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@godaddy.com"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -306,8 +490,8 @@
             "is_redirect": 0,
             "is_parked": 1,
             "has_contacts_info": 0,
-            "domain_similarity": 0.9,
-            "homogeneity_score": 0,
+            "domain_similarity": 0.87,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -315,6 +499,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -324,10 +510,10 @@
         "label": "Парковка",
         "features": {
             "is_redirect": 0,
-            "is_parked": 1,
+            "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0,
+            "homogeneity_score": 0.4833,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -335,8 +521,23 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Unknown",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -347,16 +548,33 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3266,
+            "homogeneity_score": 0.3389,
             "has_legal_info": 1,
             "has_physical_address": 1,
-            "owner_match": 1,
+            "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (800) 77-003-96"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -367,16 +585,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3213,
+            "homogeneity_score": 0.426,
             "has_legal_info": 0,
             "has_physical_address": 1,
-            "owner_match": 1,
+            "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -387,16 +620,44 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.2667,
+            "homogeneity_score": 0.391,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "zayavka@supportsamsung.ru"
+                    ],
+                    "phones": [
+                        "+7 ( 999 ) 999 - 99 - 99",
+                        "+7 (495) 157-60-78",
+                        "+7 (999) 999-99-99"
+                    ],
+                    "inn": [
+                        "772153227359"
+                    ]
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {
+                    "exists": true,
+                    "name": "ИП Борзенко Наталья Александровна",
+                    "status": "ACTIVE",
+                    "address": "г Москва"
+                }
+            }
         }
     },
     {
@@ -407,16 +668,40 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4447,
+            "homogeneity_score": 0.4229,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (495) 182-09-83"
+                    ],
+                    "inn": [
+                        "745219100401"
+                    ]
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {
+                    "exists": true,
+                    "name": "ИП Холодная Виктория Дмитриевна",
+                    "status": "ACTIVE",
+                    "address": "Московская обл, г Красногорск"
+                }
+            }
         }
     },
     {
@@ -427,16 +712,42 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.2287,
+            "homogeneity_score": 0.3661,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@unionstore.ru"
+                    ],
+                    "phones": [
+                        "+7 (909) 295-76-66"
+                    ],
+                    "inn": [
+                        "526320097729"
+                    ]
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {
+                    "exists": true,
+                    "name": "ИП Прохорова Алёна Алексеевна",
+                    "status": "ACTIVE",
+                    "address": "г Нижний Новгород"
+                }
+            }
         }
     },
     {
@@ -447,16 +758,42 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.39,
+            "homogeneity_score": 0.434,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "remontdvgarant@rambler.ru"
+                    ],
+                    "phones": [
+                        "+7 (495) 877-12-32"
+                    ],
+                    "inn": [
+                        "463249167919"
+                    ]
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {
+                    "exists": true,
+                    "name": "ИП Дюмин Сергей Сергеевич",
+                    "status": "ACTIVE",
+                    "address": "г Курск"
+                }
+            }
         }
     },
     {
@@ -467,16 +804,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3436,
+            "homogeneity_score": 0.3908,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -487,16 +839,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.2129,
+            "homogeneity_score": 0.4056,
             "has_legal_info": 1,
             "has_physical_address": 1,
-            "owner_match": 1,
+            "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@online-samsung.ru"
+                    ],
+                    "phones": [
+                        "8 800 755-7525"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "LLC \"Galaxymart\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -507,16 +878,42 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5999,
+            "homogeneity_score": 0.655,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "service-centerdm@yandex.ru"
+                    ],
+                    "phones": [
+                        "+7 932 322 6363"
+                    ],
+                    "inn": [
+                        "720317250379"
+                    ]
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {
+                    "exists": true,
+                    "name": "ИП Пинчук Станислав Андреевич",
+                    "status": "ACTIVE",
+                    "address": "г Тюмень"
+                }
+            }
         }
     },
     {
@@ -527,16 +924,33 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3618,
+            "homogeneity_score": 0.7134,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
-            "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_review_news_site": 1,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (495) 500-5-550"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -547,16 +961,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4021,
+            "homogeneity_score": 0.6913,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 1,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (495) 500-55-50",
+                        "+7 (495) 655-57-77",
+                        "88005555550"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -567,16 +1000,33 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3626,
+            "homogeneity_score": 0.5289,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@secure-t.ru"
+                    ],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "\"SEKJuR-TI\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -587,16 +1037,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5699,
-            "has_legal_info": 1,
-            "has_physical_address": 1,
-            "owner_match": 1,
-            "commercial_intent": 1,
+            "homogeneity_score": 0.8847,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 0,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "official@sber-service.ru"
+                    ],
+                    "phones": [
+                        "+7 (495) 921-37-01"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "\"Sberbank-Service\", LLC",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -607,16 +1076,33 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3064,
+            "homogeneity_score": 0.685,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 495 500-55-50"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -627,16 +1113,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.484,
+            "homogeneity_score": 0.7581,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 1,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "\"Sberbank of Russia\" PJSC",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -645,9 +1146,9 @@
         "features": {
             "is_redirect": 0,
             "is_parked": 1,
-            "has_contacts_info": 0,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0,
+            "has_contacts_info": 1,
+            "domain_similarity": 0.2143,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -655,6 +1156,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -666,17 +1169,36 @@
             "is_redirect": 0,
             "is_parked": 0,
             "has_contacts_info": 1,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0.118,
+            "domain_similarity": 0.3,
+            "homogeneity_score": 0.5037,
             "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "admin@spb-adidas.ru"
+                    ],
+                    "phones": [
+                        "8 (931) 589-75-36"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -686,17 +1208,36 @@
             "is_redirect": 0,
             "is_parked": 0,
             "has_contacts_info": 1,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0.061,
-            "has_legal_info": 1,
+            "domain_similarity": 0.25,
+            "homogeneity_score": 0.4853,
+            "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "admin@adidasonline.ru"
+                    ],
+                    "phones": [
+                        "+7(925) 665-25-80"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -707,7 +1248,7 @@
             "is_parked": 1,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0,
+            "homogeneity_score": 0.0,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
@@ -715,6 +1256,8 @@
             "is_marketplace": 0,
             "is_review_news_site": 0,
             "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
             "is_fake_inn": 0
         }
@@ -727,16 +1270,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5663,
+            "homogeneity_score": 0.6424,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 1,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "avitologteam@yandex.ru"
+                    ],
+                    "phones": [
+                        "+7 909 767 89 42"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -747,16 +1309,35 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3879,
+            "homogeneity_score": 0.594,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 1,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "mail@mail.ru"
+                    ],
+                    "phones": [
+                        "8 000 000-00-00"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -767,16 +1348,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4921,
-            "has_legal_info": 0,
-            "has_physical_address": 0,
+            "homogeneity_score": 0.6748,
+            "has_legal_info": 1,
+            "has_physical_address": 1,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -787,16 +1383,37 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5415,
+            "homogeneity_score": 0.6318,
             "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@avitolog.org"
+                    ],
+                    "phones": [
+                        "+7(812)467-84-48"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@reg.ru"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -807,16 +1424,37 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3893,
-            "has_legal_info": 1,
+            "homogeneity_score": 0.5287,
+            "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "avitocenter@yandex.ru",
+                        "info@avitocenter.ru"
+                    ],
+                    "phones": [
+                        "+7 (499) 112-48-38",
+                        "8 (495) 115-39-12"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -827,16 +1465,38 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.6945,
+            "homogeneity_score": 0.7739,
             "has_legal_info": 0,
-            "has_physical_address": 1,
+            "has_physical_address": 0,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@avitocenter.com"
+                    ],
+                    "phones": [
+                        "+7 (499) 112-48-38"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@reg.ru",
+                        "v.a.kokorev@ya.ru"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -847,16 +1507,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4155,
+            "homogeneity_score": 0.499,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
-            "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_review_news_site": 1,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -867,16 +1542,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4288,
+            "homogeneity_score": 0.5853,
             "has_legal_info": 0,
-            "has_physical_address": 0,
+            "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -887,16 +1577,38 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4136,
+            "homogeneity_score": 0.5218,
             "has_legal_info": 0,
             "has_physical_address": 0,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 922 600-600-1",
+                        "+7 922-600-600-1",
+                        "86009135406"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@reg.ru",
+                        "6006005@mail.ru"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -907,16 +1619,36 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.4611,
+            "homogeneity_score": 0.5947,
             "has_legal_info": 0,
             "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [
+                        "info@avito-money.ru"
+                    ],
+                    "phones": [
+                        "+7 (931) 231-55-50",
+                        "8 (931) 231-55-50"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -927,36 +1659,68 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 0.0714,
-            "homogeneity_score": 0.2497,
+            "homogeneity_score": 0.3768,
             "has_legal_info": 0,
             "has_physical_address": 1,
-            "owner_match": 1,
+            "owner_match": 0,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (495) 136-27-76"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
         "url": "https://www.tbank.ru/",
         "label": "Легальный",
         "features": {
-          "is_redirect": 0,
-          "is_parked": 0,
-          "has_contacts_info": 0,
-          "domain_similarity": 1.0,
-          "homogeneity_score": 0.4387,
-          "has_legal_info": 1,
-          "has_physical_address": 1,
-          "owner_match": 1,
-          "commercial_intent": 1,
-          "is_marketplace": 0,
-          "is_review_news_site": 0,
-          "is_fake_agregator": 0,
-          "is_private_whois": 0,
-          "is_fake_inn": 0
+            "is_redirect": 0,
+            "is_parked": 0,
+            "has_contacts_info": 0,
+            "domain_similarity": 1.0,
+            "homogeneity_score": 0.0,
+            "has_legal_info": 0,
+            "has_physical_address": 0,
+            "owner_match": 1,
+            "commercial_intent": 0,
+            "is_marketplace": 0,
+            "is_review_news_site": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
+            "is_private_whois": 0,
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "phones": [],
+                    "emails": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "AO TBank",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -967,16 +1731,34 @@
             "is_parked": 0,
             "has_contacts_info": 1,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3713,
+            "homogeneity_score": 0.5658,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 1,
             "commercial_intent": 1,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [
+                        "+7 (495) 785-53-05",
+                        "8 (800) 100-24-24"
+                    ],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "BANK VTB (PUBLIChNOE AKCIONERNOE OBShchESTVO)",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -986,17 +1768,32 @@
             "is_redirect": 0,
             "is_parked": 0,
             "has_contacts_info": 0,
-            "domain_similarity": 1.0,
-            "homogeneity_score": 0.3587,
+            "domain_similarity": 0.6667,
+            "homogeneity_score": 0.4165,
             "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 1,
             "commercial_intent": 1,
             "is_marketplace": 1,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "LLC \"MVM\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -1007,16 +1804,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3391,
+            "homogeneity_score": 0.5294,
             "has_legal_info": 1,
-            "has_physical_address": 0,
+            "has_physical_address": 1,
             "owner_match": 1,
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 1,
+            "claims_official": 1,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Limited Liability Company \"Gazprom telecom\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -1027,16 +1839,31 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.3627,
+            "homogeneity_score": 0.5895,
             "has_legal_info": 1,
-            "has_physical_address": 0,
+            "has_physical_address": 1,
             "owner_match": 0,
             "commercial_intent": 0,
             "is_marketplace": 0,
             "is_review_news_site": 1,
-            "is_fake_agregator": 0,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 0,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "LLC \"Lenta.Ru\"",
+                    "emails": [],
+                    "is_private": false
+                },
+                "inn_validation": {}
+            }
         }
     },
     {
@@ -1047,16 +1874,34 @@
             "is_parked": 0,
             "has_contacts_info": 0,
             "domain_similarity": 1.0,
-            "homogeneity_score": 0.5131,
-            "has_legal_info": 0,
+            "homogeneity_score": 0.6289,
+            "has_legal_info": 1,
             "has_physical_address": 1,
             "owner_match": 1,
-            "commercial_intent": 1,
+            "commercial_intent": 0,
             "is_marketplace": 0,
-            "is_review_news_site": 0,
-            "is_fake_agregator": 0,
+            "is_review_news_site": 1,
+            "is_fake_aggregator": 0,
+            "is_homogenous": 0,
+            "claims_official": 0,
             "is_private_whois": 1,
-            "is_fake_inn": 0
+            "is_fake_inn": 0,
+            "osint": {
+                "contacts": {
+                    "emails": [],
+                    "phones": [],
+                    "inn": []
+                },
+                "whois": {
+                    "registrant_org": "Private Person",
+                    "emails": [
+                        "abuse@internet.bs",
+                        "info@domain-contact.org"
+                    ],
+                    "is_private": true
+                },
+                "inn_validation": {}
+            }
         }
     }
 ]

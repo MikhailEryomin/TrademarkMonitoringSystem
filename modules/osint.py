@@ -14,7 +14,6 @@ PRIVATE_WHOIS_MARKERS = ("private", "privacy", "protection", "redacted")
 
 
 def check_whois(domain: str) -> dict:
-    """Return a compact WHOIS summary for a domain."""
     try:
         whois_data = whois.whois(domain)
         organization = whois_data.org[0] if isinstance(whois_data.org, list) else whois_data.org
@@ -32,7 +31,7 @@ def check_whois(domain: str) -> dict:
 
 
 def validate_inn(inn: str) -> dict:
-    """Validate INN through DaData."""
+
     if not DADATA_API_KEY or not inn:
         return {"exists": False}
 

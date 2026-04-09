@@ -1,11 +1,13 @@
 ﻿import json
+import re
 import logging
 import os
 from textwrap import dedent
-
+from modules.osint import check_whois, validate_inn
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer, util
 from strsimpy.levenshtein import Levenshtein
+import utils.utils as utils
 
 from modules.LLM import query
 
@@ -25,6 +27,7 @@ LLM_FEATURE_KEYS = [
     "is_review_news_site",
     "is_fake_aggregator",
     "is_homogenous",
+    "claims_official"
 ]
 
 
@@ -57,9 +60,13 @@ class FeatureExtractor:
         return SentenceTransformer(BERT_MODEL_PATH)
 
     @staticmethod
-    def _build_llm_prompt(site_data: dict, tm_name: str, owner_name: str, mktu_descriptions: list[str]) -> str:
+    def _build_llm_prompt(site_data: dict, tm_name: str, owner_name: str, mktu_nums: list[str]) -> str:
         contacts = json.dumps(site_data.get("contacts", {}), ensure_ascii=False)
-        mktu_text = ", ".join(mktu_descriptions)
+
+        nums_str = ", ".join(map(str, mktu_nums))
+
+        whois_org = site_data.get('whois', {}).get('registrant_org', 'Скрыто (Private Person)')
+
         return dedent(
             f"""
             Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
@@ -70,16 +77,18 @@ class FeatureExtractor:
             - Description: {site_data.get('description', '')}
             - Content: {site_data.get('content_sample', '')}
             - Contacts: {contacts}
+            - Владелец домена (WHOIS): {whois_org}
             
             Определи значения следующих флагов (true или false):
             1. "has_legal_info": Указаны ли реквизиты юридического лица (ИНН ИЛИ ОГРН ИЛИ ОГРНИП ИЛИ полное ФИО индивидуального предпринимателя (ИП)) ИЛИ название предприятия (например, ООО "Название" ИЛИ ПАО "Название")?
             2. "has_physical_address": Указан ли физический адрес компании ИЛИ магазина на любом языке (улица, дом, город, например: "ул.", "д.", "г.")?
-            3. "owner_match": Принадлежит ли сайт владельцу ТЗ "{owner_name}"?
+            3. "owner_match": Принадлежит ли сайт владельцу ТЗ? Сравни владельца ТЗ с юридическими лицами в Контактах, Контенте сайта И с Владельцем домена (WHOIS). Если есть совпадение или явная аффилированность — ставь true. Если Владелец домена "Скрыто", а на сайте нет реквизитов — ставь false.
             4. "commercial_intent": Является ли целью сайта ПРЯМАЯ продажа товаров/услуг (наличие каталога с ценами, корзины, предложений платного ремонта)?
             5. "is_marketplace": Это крупный мультибрендовый ИНТЕРНЕТ-МАГАЗИН (как Ozon, Wildberries), где пользователь может купить товары РАЗНЫХ брендов? ВАЖНО: сайты с отзывами, статьями и купонами НЕ являются маркетплейсами (ставь false).
             6. "is_review_news_site": Является ли ОСНОВНАЯ цель сайта публикация НЕЗАВИСИМЫХ новостей, статей или агрегация отзывов? ВАЖНО: корпоративные сайты брендов с разделом "Новости" не являются новостными порталами. Если ставишь true, то owner_match ДОЛЖЕН быть false.
             7. "is_fake_aggregator": Мимикрирует ли сайт под новости или отзывы, но при этом содержит агрессивные призывы к покупке, партнерские ссылки (affiliate), промокоды или явную рекламу конкретного магазина товаров "{tm_name}"?
-            8. "is_homogenous": Предлагает ли сайт товары, услуги или информацию, которые логически связаны с классами МКТУ бренда: [{mktu_text}]?
+            8. "is_homogenous": Предлагает ли сайт товары, услуги или информацию, которые логически подпадают под классы МКТУ: {nums_str}? (Используй свои знания о Ниццкой классификации товаров и услуг).
+            9. "claims_official": Заявляет ли сайт о том, что он является официальным?
     
             Ответь СТРОГО в следующем формате без markdown разметки:
             {{
@@ -90,15 +99,11 @@ class FeatureExtractor:
                 "is_marketplace": false,
                 "is_review_news_site": false,
                 "is_fake_aggregator": false,
-                "is_homogenous": false
+                "is_homogenous": false,
+                "claims_official": false
             }}
             """
         ).strip()
-
-    @staticmethod
-    def _extract_domain_label(url: str) -> str:
-        clean_url = url.split("://")[-1].replace("www.", "")
-        return clean_url.split(".")[0]
 
     def _calculate_domain_similarity(self, tm_name: str, url: str, domain_label: str) -> float:
         tm_name = (tm_name or "").lower().strip()
@@ -127,7 +132,6 @@ class FeatureExtractor:
 
     def _calculate_homogeneity(self, site_data: dict, mktu_descriptions: list[str]) -> float:
         if not self.bert_model or not site_data or not mktu_descriptions:
-            logger.info("Homogeneity skipped: missing model, site data, or MKTU descriptions")
             return 0.0
 
         text_candidates = [
@@ -136,20 +140,34 @@ class FeatureExtractor:
             site_data.get("content_sample", "")[:1000],
         ]
         texts_to_check = [text for text in text_candidates if len(text) > 5]
+
         if not texts_to_check:
-            logger.info("Homogeneity skipped: no meaningful text fragments")
+            return 0.0
+
+        mktu_items = []
+        for desc in mktu_descriptions:
+            items = re.split(r'[,;]', desc)
+            for item in items:
+                clean_item = item.strip()
+                if len(clean_item) > 3:
+                    mktu_items.append(clean_item)
+
+        if not mktu_items:
             return 0.0
 
         site_embeddings = self.bert_model.encode(texts_to_check)
-        max_similarity = 0.0
+        mktu_embeddings = self.bert_model.encode(mktu_items)
 
-        for description in mktu_descriptions:
-            mktu_embedding = self.bert_model.encode(description[:500])
-            current_similarity = float(util.cos_sim(site_embeddings, mktu_embedding).max())
-            max_similarity = max(max_similarity, current_similarity)
+        # Матричное вычисление сходства
+        cos_scores = util.cos_sim(site_embeddings, mktu_embeddings)
+
+        max_similarity = float(cos_scores.max())
 
         result = round(max_similarity, 4)
-        logger.info("Homogeneity score=%s for url=%s", result, site_data.get("url"))
+        logger.info(
+            "Homogeneity score=%s (compared %s site fragments vs %s MKTU items)",
+            result, len(texts_to_check), len(mktu_items)
+        )
         return result
 
     @staticmethod
@@ -167,10 +185,13 @@ class FeatureExtractor:
             site_data=site_data,
             tm_name=tm_data.get("name", ""),
             owner_name=tm_data.get("owner_name", ""),
-            mktu_descriptions=tm_data.get("mktu_descriptions", []),
+            mktu_nums=tm_data.get("mktu_nums", []),
         )
+        # print(prompt)
         logger.info("Sending LLM request for %s", site_data.get("url"))
         response = query(f"{LLM_SYSTEM_PROMPT}\n\n{prompt}")
+        # print(response['usage']['total_tokens'])
+        # print(response)
         if not response:
             logger.warning("LLM returned empty response for %s", site_data.get("url"))
             return _empty_llm_features()
@@ -180,14 +201,41 @@ class FeatureExtractor:
             parsed = json.loads(content)
             logger.info("Raw LLM JSON for %s: %s", site_data.get("url"), json.dumps(parsed, ensure_ascii=False))
             return self._normalize_llm_features(parsed)
-        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        except Exception as exc:
             logger.warning("Failed to parse LLM response for %s: %s", site_data.get("url"), exc)
             return _empty_llm_features()
 
+    @staticmethod
+    def _build_osint_payload(site: dict, whois_info: dict, inn_info: dict) -> dict:
+        inns = site.get("contacts", {}).get("inn", [])
+        return {
+            "is_private_whois": 1 if whois_info.get("is_private") else 0,
+            "is_fake_inn": 1 if inns and not inn_info.get("exists") else 0,
+            "osint": {
+                "contacts": site.get("contacts", {}),
+                "whois": whois_info,
+                "inn_validation": inn_info,
+            },
+        }
+
     def analyze_site(self, site_data: dict, tm_data: dict) -> dict:
-        """Collect a normalized feature vector for a scraped website."""
-        url = site_data.get("url", "")
-        domain_label = self._extract_domain_label(url)
+
+        url = site_data.get("url", "")  # https://google.com
+        domain = utils.extract_domain(url)  # google.com
+        domain_label = utils.extract_domain_label(domain)
+        whois_info = check_whois(domain)
+        site_data["whois"] = whois_info
+        inns = site_data.get("contacts", {}).get("inn", [])
+        inn_info = validate_inn(inns[0]) if inns else {}
+
+        logger.info(
+            "OSINT summary for %s: registrant=%s, private=%s, inns=%s, inn_validation=%s",
+            site_data["url"],
+            whois_info.get("registrant_org"),
+            whois_info.get("is_private"),
+            inns,
+            inn_info,
+        )
 
         logger.info("Analyzer started for %s", url)
         features = {
@@ -197,7 +245,7 @@ class FeatureExtractor:
             "domain_similarity": self._calculate_domain_similarity(
                 tm_name=tm_data.get("name_lat", ""),
                 url=url,
-                domain_label=domain_label,
+                domain_label=domain_label  # google.com -> google,
             ),
         }
         logger.info("Base analyzer features for %s: %s", url, json.dumps(features, ensure_ascii=False))
@@ -211,7 +259,8 @@ class FeatureExtractor:
             mktu_descriptions=tm_data.get("mktu_descriptions", []),
         )
         features.update(self._query_llm_features(site_data, tm_data))
-
+        features.update(self._build_osint_payload(site_data, whois_info, inn_info))
         final_features = fill_empty_features(features)
+
         logger.info("Analyzer final features for %s: %s", url, json.dumps(final_features, ensure_ascii=False))
         return final_features

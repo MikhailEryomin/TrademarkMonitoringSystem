@@ -1,5 +1,4 @@
-﻿import logging
-import os
+﻿import os
 from datetime import datetime
 from typing import Optional
 
@@ -13,24 +12,13 @@ from core.models import ScanResult, SessionLocal, Trademark
 from modules.tm_parser import TrademarkParser
 from pipeline import TrademarkPipeline
 
-
-def configure_logging(level: int = logging.INFO):
-    root_logger = logging.getLogger()
-    if not root_logger.handlers:
-        logging.basicConfig(
-            level=level,
-            format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-        )
-    else:
-        root_logger.setLevel(level)
-
-
-configure_logging()
+from sqlalchemy import func
+from datetime import timedelta
 
 app = FastAPI(
     title="Trademark Monitoring API",
     description="API for trademark infringement monitoring",
-    version="1.2.0",
+    version="1.2.1",
 )
 
 app.add_middleware(
@@ -58,9 +46,6 @@ class ScanResultResponse(BaseModel):
     predicted_category: str
     confidence: Optional[float]
     scan_date: datetime
-    is_parked: bool
-    domain_similarity: Optional[float]
-    content_homogeneity: Optional[float]
     features: dict = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
@@ -104,9 +89,6 @@ def _build_scan_result_response(result: ScanResult) -> dict:
         "predicted_category": result.predicted_category,
         "confidence": result.confidence,
         "scan_date": result.scan_date,
-        "is_parked": bool(features.get("is_parked", False)),
-        "domain_similarity": features.get("domain_similarity"),
-        "content_homogeneity": features.get("homogeneity_score"),
         "features": features,
     }
 
@@ -119,7 +101,7 @@ def read_root():
 @app.get("/api/trademark/{tm_number}")
 def get_tm_info(tm_number: str):
     try:
-        return TrademarkParser().get_or_fetch_trademark(tm_number)
+        return TrademarkParser().get_or_fetch_trademark(tm_number)  # tm_data JSON
     except Exception as exc:
         raise HTTPException(status_code=404, detail=f"Trademark lookup failed: {exc}") from exc
 
@@ -137,18 +119,21 @@ def get_all_trademarks():
 
 
 @app.get("/api/results/{tm_number}", response_model=list[ScanResultResponse])
-def get_scan_results(tm_number: str):
+def get_scan_results(tm_number: str, latest: bool = False):
     with SessionLocal() as db:
         trademark = db.query(Trademark).filter_by(registration_number=tm_number).first()
         if not trademark:
             raise HTTPException(status_code=404, detail="Trademark not found in database.")
 
-        results = (
-            db.query(ScanResult)
-            .filter_by(trademark_id=trademark.id)
-            .order_by(ScanResult.predicted_category)
-            .all()
-        )
+        base_query = db.query(ScanResult).filter_by(trademark_id=trademark.id)
+
+        if latest:
+            max_date = db.query(func.max(ScanResult.scan_date)).filter_by(trademark_id=trademark.id).scalar()
+            if max_date:
+                time_threshold = max_date - timedelta(minutes=5)
+                base_query = base_query.filter(ScanResult.scan_date >= time_threshold)
+
+        results = base_query.order_by(ScanResult.predicted_category).all()
         return [_build_scan_result_response(result) for result in results]
 
 
