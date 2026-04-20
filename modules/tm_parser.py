@@ -33,6 +33,7 @@ def parse_html(html_content: str) -> dict:
         "registration_date": None,
         "application_date": None,
         "status": DEFAULT_TM_STATUS,
+        "licensees": [],
         "sign_type": DEFAULT_TM_TYPE,
         "image_url": None,
         "name": None,
@@ -55,6 +56,17 @@ def parse_html(html_content: str) -> dict:
         next_b = last_732_tag.find_next("b")
         if next_b:
             data["owner_name"] = next_b.get_text(strip=True)
+
+    tags_791 = soup.find_all(string=re.compile(r"\(791\)"))
+    data["licensees"] = []
+    if tags_791:
+        for i in range(10):
+            tag = tags_791[i]
+            next_b = tag.find_next("b")
+            if next_b:
+                data["licensees"].append(next_b.get_text(strip=True))
+
+
     data["sign_type"] = _find_next_b_text(soup, r"\(550\)") or DEFAULT_TM_TYPE
     data["registration_date"] = _find_next_b_text(soup, r"\(151\)")
     data["application_date"] = _find_next_b_text(soup, r"\(220\)")
@@ -67,10 +79,11 @@ def parse_html(html_content: str) -> dict:
         if image and image.get("src"):
             data["image_url"] = image["src"]
 
-    tag_511 = soup.find(string=re.compile(r"\(511\)"))
+    tag_511 = soup.find(string=re.compile(r"\(511\)")).parent
     if tag_511:
-        for bold_tag in tag_511.find_all_next("b"):
+        for bold_tag in tag_511.find_all("b"):
             mktu_block = bold_tag.get_text()
+            print(mktu_block)
             if re.search(r"\(\d{3}\)", mktu_block):
                 break
             for match in re.finditer(r"(\d{2})\s*-\s*([^\n]+)", mktu_block):
@@ -80,6 +93,7 @@ def parse_html(html_content: str) -> dict:
                         "description": match.group(2).strip(),
                     }
                 )
+
 
     status_row = soup.find("tr", attrs={"class": "Status"})
     if status_row:
@@ -145,22 +159,31 @@ class TrademarkParser:
         return datetime.strptime(value, "%d.%m.%Y")
 
     @staticmethod
-    def _normalize_tm_payload(tm_name: str, owner_name: str, logo_url: str, mktu_classes: list[dict]) -> dict:
+    def _normalize_tm_payload(
+            tm_name: str,
+            owner_name: str,
+            logo_url: str,
+            mktu_classes: list[dict],
+            licensees: list[str] = None
+    ) -> dict:
         return {
             "name": tm_name,
             "name_lat": get_transliterated_name(tm_name),
             "logo_url": logo_url,
             "owner_name": owner_name,
+            "licensees": licensees or [],
+            "mktu": mktu_classes,
             "mktu_descriptions": [item["description"] for item in mktu_classes],
             "mktu_nums": [item["number"] for item in mktu_classes],
         }
 
     def _get_cached_payload(self, cached_tm: Trademark) -> dict:
         tm_name = cached_tm.name or "unknown"
+        licensees = cached_tm.licensees
         owner_name = cached_tm.owner.name if cached_tm.owner else "Unknown Owner"
         logo_url = cached_tm.image_url or "undefined"
         mktu_classes = [{"number": item.number, "description": item.description} for item in cached_tm.mktu_classes]
-        payload = self._normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes)
+        payload = self._normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes, licensees)
         logger.info("Trademark %s loaded from cache: %s", cached_tm.registration_number,
                     json.dumps(payload, ensure_ascii=False))
         return payload
@@ -169,6 +192,8 @@ class TrademarkParser:
         tm_name = tm_data.get("name") or "Unknown"
         owner_name = tm_data.get("owner_name") or "Unknown Owner"
         logo_url = tm_data.get("image_url")
+        licensees = tm_data.get("licensees")
+        sign_type=tm_data.get("sign_type") or DEFAULT_TM_TYPE
         mktu_classes = tm_data.get("mktu_classes", [])
 
         owner = db.query(Owner).filter_by(name=owner_name).first()
@@ -183,7 +208,8 @@ class TrademarkParser:
             application_number=tm_data.get("application_number"),
             status=tm_data.get("status"),
             name=tm_name,
-            sign_type=tm_data.get("sign_type") or DEFAULT_TM_TYPE,
+            licensees=licensees,
+            sign_type=sign_type,
             image_url=logo_url,
             owner=owner,
         )
@@ -213,4 +239,4 @@ class TrademarkParser:
 
             logger.info("Trademark %s not found in cache, requesting FIPS", tm_number)
             tm_data = self.process_trademark_url(get_fips_url(tm_number))
-            return self._save_fetched_trademark(db, tm_number, tm_data) # tm_data JSON
+            return self._save_fetched_trademark(db, tm_number, tm_data)  # tm_data JSON

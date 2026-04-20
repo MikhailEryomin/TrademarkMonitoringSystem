@@ -281,7 +281,7 @@
     },
     {
         "url": "https://szmsung.com",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 1,
@@ -386,7 +386,7 @@
     },
     {
         "url": "https://samsung-pay.net",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -542,7 +542,7 @@
     },
     {
         "url": "https://www.samsungstore.ru/",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -798,7 +798,7 @@
     },
     {
         "url": "https://samsung-help.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -833,7 +833,7 @@
     },
     {
         "url": "https://online-samsung.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -918,7 +918,7 @@
     },
     {
         "url": "https://lk-sberbank.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -955,7 +955,7 @@
     },
     {
         "url": "https://sberbanklk.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -994,7 +994,7 @@
     },
     {
         "url": "https://sberbcnk.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -1070,7 +1070,7 @@
     },
     {
         "url": "https://onlinesberbank.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -1142,7 +1142,7 @@
     },
     {
         "url": "https://adidasofficial.ru",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 1,
@@ -1833,7 +1833,7 @@
     },
     {
         "url": "https://lenta.ru/tags/organizations/sberbank-rossii/",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,
@@ -1868,7 +1868,7 @@
     },
     {
         "url": "https://habr.com/ru/companies/tbank/news/",
-        "label": "Подозрительный",
+        "label": "Нарушение",
         "features": {
             "is_redirect": 0,
             "is_parked": 0,

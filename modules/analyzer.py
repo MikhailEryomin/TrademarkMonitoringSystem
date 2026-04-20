@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer, util
 from strsimpy.levenshtein import Levenshtein
 import utils.utils as utils
 
-from modules.LLM import query
+from modules.LLM2 import query
 
 load_dotenv()
 
@@ -81,25 +81,19 @@ class FeatureExtractor:
             
             Определи значения следующих флагов (true или false):
             1. "has_legal_info": Указаны ли реквизиты юридического лица (ИНН ИЛИ ОГРН ИЛИ ОГРНИП ИЛИ полное ФИО индивидуального предпринимателя (ИП)) ИЛИ название предприятия (например, ООО "Название" ИЛИ ПАО "Название")?
-            2. "has_physical_address": Указан ли физический адрес компании ИЛИ магазина на любом языке (улица, дом, город, например: "ул.", "д.", "г.")?
-            3. "owner_match": Принадлежит ли сайт владельцу ТЗ? Сравни владельца ТЗ с юридическими лицами в Контактах, Контенте сайта И с Владельцем домена (WHOIS). Если есть совпадение или явная аффилированность — ставь true. Если Владелец домена "Скрыто", а на сайте нет реквизитов — ставь false.
-            4. "commercial_intent": Является ли целью сайта ПРЯМАЯ продажа товаров/услуг (наличие каталога с ценами, корзины, предложений платного ремонта)?
-            5. "is_marketplace": Это крупный мультибрендовый ИНТЕРНЕТ-МАГАЗИН (как Ozon, Wildberries), где пользователь может купить товары РАЗНЫХ брендов? ВАЖНО: сайты с отзывами, статьями и купонами НЕ являются маркетплейсами (ставь false).
-            6. "is_review_news_site": Является ли ОСНОВНАЯ цель сайта публикация НЕЗАВИСИМЫХ новостей, статей или агрегация отзывов? ВАЖНО: корпоративные сайты брендов с разделом "Новости" не являются новостными порталами. Если ставишь true, то owner_match ДОЛЖЕН быть false.
-            7. "is_fake_aggregator": Мимикрирует ли сайт под новости или отзывы, но при этом содержит агрессивные призывы к покупке, партнерские ссылки (affiliate), промокоды или явную рекламу конкретного магазина товаров "{tm_name}"?
-            8. "is_homogenous": Предлагает ли сайт товары, услуги или информацию, которые логически подпадают под классы МКТУ: {nums_str}? (Используй свои знания о Ниццкой классификации товаров и услуг).
-            9. "claims_official": Заявляет ли сайт о том, что он является официальным?
+            2. "owner_match": Принадлежит ли сайт владельцу ТЗ? Если владелец домена (WHOIS) не является "Скрыто (Private Person)", то сравни владельца ТЗ с юридическими лицами в контенте сайта И с Владельцем домена (WHOIS). Если Владелец домена "Скрыто (Private Person)" - сравни владельца ТЗ с юридическими контактами на сайте. Если их нет - ставь false.
+            3. "commercial_intent": Является ли целью сайта ПРЯМАЯ продажа товаров/услуг (наличие каталога с ценами, корзины, предложений платного ремонта)?
+            4. "is_marketplace": Это крупный мультибрендовый ИНТЕРНЕТ-МАГАЗИН (как Ozon, Wildberries), где пользователь может купить товары РАЗНЫХ брендов? ВАЖНО: сайты с отзывами, статьями и купонами НЕ являются маркетплейсами (ставь false).
+            5. "is_review_news_site": Является ли ОСНОВНАЯ цель сайта публикация НЕЗАВИСИМЫХ новостей, статей или агрегация отзывов? ВАЖНО: корпоративные сайты брендов с разделом "Новости" не являются новостными порталами. Если ставишь true, то owner_match ДОЛЖЕН быть false.
+            6. "claims_official": Заявляет ли сайт о том, что он является официальным?
     
             Ответь СТРОГО в следующем формате без markdown разметки:
             {{
                 "has_legal_info": false,
-                "has_physical_address": false,
                 "owner_match": false,
                 "commercial_intent": false,
                 "is_marketplace": false,
                 "is_review_news_site": false,
-                "is_fake_aggregator": false,
-                "is_homogenous": false,
                 "claims_official": false
             }}
             """
@@ -187,7 +181,7 @@ class FeatureExtractor:
             owner_name=tm_data.get("owner_name", ""),
             mktu_nums=tm_data.get("mktu_nums", []),
         )
-        # print(prompt)
+        #print(prompt)
         logger.info("Sending LLM request for %s", site_data.get("url"))
         response = query(f"{LLM_SYSTEM_PROMPT}\n\n{prompt}")
         # print(response['usage']['total_tokens'])
@@ -197,7 +191,7 @@ class FeatureExtractor:
             return _empty_llm_features()
 
         try:
-            content = response["choices"][0]["message"]["content"]
+            content = response
             parsed = json.loads(content)
             logger.info("Raw LLM JSON for %s: %s", site_data.get("url"), json.dumps(parsed, ensure_ascii=False))
             return self._normalize_llm_features(parsed)

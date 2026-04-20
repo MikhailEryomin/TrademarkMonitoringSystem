@@ -4,11 +4,11 @@ aiohttp~=3.13.3
 fake-useragent
 langdetect~=1.0.9
 
-fastapi
-uvicorn
+fastapi~=0.128.0
+uvicorn~=0.40.0
 sqlalchemy~=2.0.45
 psycopg2
-pydantic
+pydantic~=2.12.5
 
 pandas~=3.0.0
 openpyxl~=3.1.5
@@ -24,3 +24,4 @@ transliterate~=1.10.2
 easyocr~=1.7.2
 pillow 
 openai~=2.26.0
+dadata~=25.10.0

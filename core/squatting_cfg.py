@@ -14,9 +14,7 @@ QWERTY_MAP = {
 
 # Source from APWG
 # TLD-squatting
-TLDS = [
-    'com', 'ru', 'рф', 'su', 'info', 'net', 'live', 'link', 'org', 'xyz', 'me', 'site', 'online'
-]
+TLDS = ['com', 'ru', 'рф', 'net', 'org', 'info', 'online', 'shop', 'su', 'site']
 
 # Homoglyphs squatting
 HOMOGLYPHS = {
@@ -67,10 +65,10 @@ INDUSTRY_MAPPING = {
 KEYWORDS = [
     # Source from akamai analysis in 2024
     'support', 'com', 'login', 'help', 'secure', 'www', 'account',
-    'app', 'verify', 'service', 'us', 'id', 'jp', 'find', 'online', 'info',
+    'app', 'verify', 'service', 'id', 'find', 'online', 'info',
     'update', 'security', 'web', 'maps', 'my', 'alert', 'mail', 'verification',
     'signin', 'auth', 'map', 'services', 'location', 'gift', 'accounts', 'live',
-    'track', 'm', 'uk', 'es', 'co', 'supports', 'findmyphone', 'device', 'fr', 'pay',
+    'track', 'm', 'supports', 'findmyphone', 'device', 'pay',
     'chat', 'inc', 'log', 'fmi', 'i', 'nitro', 'center', 'event',
     # ru-segment (heuristric data or yandex wordstats source)
     'russia', 'msk', 'spb', 'krd', 'ekb', 'samara', 'nn', '77', '78', '23', '96', '63',

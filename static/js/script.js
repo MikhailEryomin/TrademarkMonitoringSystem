@@ -124,7 +124,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 
     async function loadCurrentResults(tmNumber) {
         try {
-            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}?latest=true`);
+            const itemBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(item))));
             const data = await res.json();
 
             const tbody = document.querySelector('#currentResultsTable tbody');
@@ -139,7 +139,7 @@ const API_BASE_URL = "http://localhost:8000/api";
                     <td><span class="badge ${getBadgeClass(item.predicted_category)} fs-6">${item.predicted_category}</span></td>
                     <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemJson}')">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemBase64}')">
                             <i class="bi bi-info-circle"></i>
                         </button>
                     </td>
@@ -153,69 +153,49 @@ const API_BASE_URL = "http://localhost:8000/api";
         }
     }
 
-// --- ФУНКЦИЯ ПОКАЗА ДЕТАЛЕЙ ---
+    // --- ФУНКЦИЯ ПОКАЗА ДЕТАЛЕЙ ---
 
-    function showDetails(encodedItem) {
-        const item = JSON.parse(decodeURIComponent(encodedItem));
+    function showDetails(encodedItemBase64) {
+        let item;
+        try {
+            const jsonString = decodeURIComponent(escape(atob(encodedItemBase64)));
+            item = JSON.parse(jsonString);
+        } catch (e) {
+            console.error("Ошибка декодирования данных:", e);
+            alert("Не удалось открыть детали. Данные повреждены.");
+            return;
+        }
+
         document.getElementById('modalDomainTitle').innerText = `Анализ: ${item.url}`;
 
-        // 1. Достаем наш блок OSINT
         const osint = item.features?.osint || {};
         const contacts = osint.contacts || {};
         const whois = osint.whois || {};
         const innData = osint.inn_validation || {};
 
-        let osintHtml = "";
+        let osintHtml = `<p><strong>Владелец домена (WHOIS):</strong><br>${whois.registrant_org || 'Неизвестно'} ${whois.is_private ? '<span class="badge bg-warning text-dark">Скрыт</span>' : ''}</p>`;
 
-        // --- WHOIS ---
-        osintHtml += `<p><strong>Владелец домена (WHOIS):</strong><br>
-                      ${whois.registrant_org || 'Неизвестно'}
-                      ${whois.is_private ? '<span class="badge bg-warning text-dark">Скрыт (Private)</span>' : ''}</p>`;
-
-        // --- ТЕЛЕФОНЫ (С поиском в Google) ---
         const phones = contacts.phones || [];
         if (phones.length > 0) {
             osintHtml += `<strong>Телефоны:</strong><ul>`;
             phones.forEach(phone => {
-                // Кодируем номер для гугла (например %2B7999...)
                 const googleLink = `https://www.google.com/search?q="${encodeURIComponent(phone)}"`;
-                osintHtml += `<li><a href="${googleLink}" target="_blank" class="text-decoration-none">${phone} 🔍</a></li>`;
+                osintHtml += `<li><a href="${googleLink}" target="_blank">${phone} 🔍</a></li>`;
             });
             osintHtml += `</ul>`;
-        } else {
-            osintHtml += `<p><strong>Телефоны:</strong> Не найдены</p>`;
-        }
-
-        // --- ЕМЕЙЛЫ ---
-        const emails = contacts.emails || [];
-        if (emails.length > 0) {
-            osintHtml += `<strong>Email:</strong> ${emails.join(', ')}<br><br>`;
-        }
-
-        // --- ИНН и DADATA ---
-        const inns = contacts.inn || [];
-        if (inns.length > 0) {
-            osintHtml += `<strong>ИНН на сайте:</strong> ${inns[0]} `;
-            if (innData.exists) {
-                const statusColor = innData.status === "ACTIVE" ? "success" : "danger";
-                osintHtml += `<br><em>ФНС: ${innData.name}</em> <span class="badge bg-${statusColor}">${innData.status}</span>`;
-                osintHtml += `<br><small class="text-muted">${innData.address}</small>`;
-            } else {
-                osintHtml += `<span class="badge bg-danger">В реестре не найден!</span>`;
-            }
-            osintHtml += ` <br>`;
         }
 
         document.getElementById('modalOsintContent').innerHTML = osintHtml;
 
-        // 2. Вставляем чистые ML-признаки (убрав блок osint, чтобы не мусорить на экране)
         const mlFeatures = { ...item.features };
-        //delete mlFeatures.osint; // Удаляем из отображения JSON, т.к. мы уже отрисовали это выше
+        delete mlFeatures.osint;
         document.getElementById('modalFeaturesJson').innerText = JSON.stringify(mlFeatures, null, 2);
 
-        // 3. Показываем модальное окно
-        const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-        modal.show();
+        setTimeout(() => {
+            const modalElement = document.getElementById('detailsModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+        }, 50);
     }
 
     // --- ФУНКЦИИ ВКЛАДКИ ИСТОРИИ ---
@@ -240,7 +220,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 
             data.forEach(item => {
                 // 1. Кодируем весь объект для передачи в модальное окно
-                const itemJson = encodeURIComponent(JSON.stringify(item));
+                const itemBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(item))));
 
                 // Форматируем дату красиво
                 const dateStr = new Date(item.scan_date).toLocaleString('ru-RU', {
@@ -257,7 +237,7 @@ const API_BASE_URL = "http://localhost:8000/api";
                     <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
                     <td class="text-muted small">${dateStr}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemJson}')">
+                        <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemBase64}')">
                             <i class="bi bi-info-circle"></i> Детали
                         </button>
                     </td>

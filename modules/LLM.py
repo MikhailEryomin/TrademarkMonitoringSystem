@@ -9,40 +9,29 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_URL = "https://api.proxyapi.ru/openrouter/v1/chat/completions"
 DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
 REQUEST_TIMEOUT = 40
 
 
-def query(content: str, model: str = DEFAULT_MODEL) -> dict | None:
-    """Sends a request to OpenRouter and returns parsed JSON."""
-    if not OPENROUTER_API_KEY:
-        logger.warning("OPENROUTER_API_KEY is not configured.")
-        return None
+def query(content: str, model: str = DEFAULT_MODEL):
+    response = requests.post(
+        url=OPENROUTER_URL,
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": content}],
+            "max_tokens": 300
+        },
+        timeout=REQUEST_TIMEOUT,
+    )
 
-    try:
-        response = requests.post(
-            url=OPENROUTER_URL,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": model,
-                "messages": [{"role": "user", "content": content}],
-                "max_tokens": 300
-            },
-            timeout=REQUEST_TIMEOUT,
-        )
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as exc:
-        logger.warning("OpenRouter request failed: %s", exc)
-        if 'response' in locals() and response is not None:
-            logger.warning("OpenRouter response body: %s", response.text[:200])
-        return None
+    completion = response.json()
+    return completion["choices"][0]["message"]["content"]
 
 
-# msg = "Знаешь ли ты что такое 9 класс МКТУ согласно Ниццкой классификации товаров и услуг?"
-# response = query(msg)
-# print(response)
+# msg = "Привет, как звучит теорема Менелая?"
+# print(query(msg))

@@ -1,14 +1,12 @@
 ﻿import asyncio
 import json
 import logging
-import socket
 import sys
-import aiohttp
 from typing import Callable
+
 from modules.analyzer import FeatureExtractor
 from modules.classifier import TrademarkClassifier
 from modules.generator import generate_domains
-
 from modules.reporter import Reporter
 from modules.scraper import AsyncScraper
 from modules.tm_parser import TrademarkParser
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class TrademarkPipeline:
-    DEFAULT_SCRAPER_LIMIT = 500
+    DEFAULT_SCRAPER_LIMIT = 1500
 
     def __init__(self, tm_number: str, status_callback: Callable[[str, str], None] | None):
         self.tm_number = tm_number
@@ -55,7 +53,7 @@ class TrademarkPipeline:
     def _parse_trademark(self):
         self.tm_data = self.parser.get_or_fetch_trademark(self.tm_number)
         logger.info("Loaded trademark data for %s", self.tm_number)
-        logger.info("Trademark payload:\n%s", json.dumps(self.tm_data, ensure_ascii=False, indent=2))
+        #logger.info("Trademark payload:\n%s", json.dumps(self.tm_data, ensure_ascii=False, indent=2))
 
     def _generate_domains(self):
         self.domains = generate_domains(
@@ -66,10 +64,10 @@ class TrademarkPipeline:
         logger.info("First generated domains: %s", self.domains[:20])
 
     async def _scrape_domains(self, limit):
-        domains_to_check = self.domains[:limit] if limit else self.domains
-        # domains_to_check = [
-        #     "avita.site"
-        # ]
+        #domains_to_check = self.domains[:limit] if limit else self.domains
+        domains_to_check = [
+            "ozon-job.ru"
+        ]
         logger.info("Starting scraper for %s domains", len(domains_to_check))
         logger.info("Domains passed to scraper: %s", domains_to_check)
         tm_name = self.tm_data.get("name_lat", "")
@@ -129,28 +127,28 @@ class TrademarkPipeline:
         self._parse_trademark()
         self._update_status("parsing", "done")
 
-        self._update_status("generating", "running")
-        self._generate_domains()
-        self._update_status("generating", "done")
-
-        self._update_status("scraping", "running")
-        await self._scrape_domains(limit=self.DEFAULT_SCRAPER_LIMIT)
-        self._update_status("scraping", "done")
-
-        self._update_status("analyzing", "running")
-        await self._analyze_sites()
-        self._update_status("analyzing", "done")
-
-        self._update_status("classifying", "running")
-        self._classify_sites()
-        self._update_status("classifying", "done")
-
-        self._update_status("reporting", "running")
-        self._report_results()
-        self._update_status("reporting", "done")
+        # self._update_status("generating", "running")
+        # self._generate_domains()
+        # self._update_status("generating", "done")
+        #
+        # self._update_status("scraping", "running")
+        # await self._scrape_domains(limit=self.DEFAULT_SCRAPER_LIMIT)
+        # self._update_status("scraping", "done")
+        #
+        # self._update_status("analyzing", "running")
+        # await self._analyze_sites()
+        # self._update_status("analyzing", "done")
+        #
+        # self._update_status("classifying", "running")
+        # self._classify_sites()
+        # self._update_status("classifying", "done")
+        #
+        # self._update_status("reporting", "running")
+        # self._report_results()
+        # self._update_status("reporting", "done")
 
         logger.info("Pipeline finished for trademark %s", self.tm_number)
 
 
 if __name__ == "__main__":
-    asyncio.run(TrademarkPipeline(tm_number="1026734", status_callback=None).run())
+    asyncio.run(TrademarkPipeline(tm_number="228275", status_callback=None).run())

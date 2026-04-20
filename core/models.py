@@ -25,6 +25,7 @@ class Trademark(Base):
     application_date = Column(Date, nullable=True)
     registration_date = Column(Date, nullable=True)
     status = Column(String(200), nullable=True)
+    licensees = Column(String(2000), nullable=True)
     sign_type = Column(String(100), nullable=True)
     image_url = Column(String(512))
     owner_id = Column(Integer, ForeignKey("owners.id"), nullable=False)
