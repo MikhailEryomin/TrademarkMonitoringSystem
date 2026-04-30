@@ -25,8 +25,6 @@ LLM_FEATURE_KEYS = [
     "commercial_intent",
     "is_marketplace",
     "is_review_news_site",
-    "is_fake_aggregator",
-    "is_homogenous",
     "claims_official"
 ]
 
@@ -60,43 +58,44 @@ class FeatureExtractor:
         return SentenceTransformer(BERT_MODEL_PATH)
 
     @staticmethod
-    def _build_llm_prompt(site_data: dict, tm_name: str, owner_name: str, mktu_nums: list[str]) -> str:
+    def _build_llm_prompt(site_data: dict, tm_name: str, owner_name: str, licensee_match) -> str:
         contacts = json.dumps(site_data.get("contacts", {}), ensure_ascii=False)
-
-        nums_str = ", ".join(map(str, mktu_nums))
 
         whois_org = site_data.get('whois', {}).get('registrant_org', 'Скрыто (Private Person)')
 
         return dedent(
             f"""
-            Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
-            Владелец ТЗ: "{owner_name}".
-    
-            Данные сайта:
-            - Заголовок: {site_data.get('title', '')}
-            - Description: {site_data.get('description', '')}
-            - Content: {site_data.get('content_sample', '')}
-            - Contacts: {contacts}
-            - Владелец домена (WHOIS): {whois_org}
-            
-            Определи значения следующих флагов (true или false):
-            1. "has_legal_info": Указаны ли реквизиты юридического лица (ИНН ИЛИ ОГРН ИЛИ ОГРНИП ИЛИ полное ФИО индивидуального предпринимателя (ИП)) ИЛИ название предприятия (например, ООО "Название" ИЛИ ПАО "Название")?
-            2. "owner_match": Принадлежит ли сайт владельцу ТЗ? Если владелец домена (WHOIS) не является "Скрыто (Private Person)", то сравни владельца ТЗ с юридическими лицами в контенте сайта И с Владельцем домена (WHOIS). Если Владелец домена "Скрыто (Private Person)" - сравни владельца ТЗ с юридическими контактами на сайте. Если их нет - ставь false.
-            3. "commercial_intent": Является ли целью сайта ПРЯМАЯ продажа товаров/услуг (наличие каталога с ценами, корзины, предложений платного ремонта)?
-            4. "is_marketplace": Это крупный мультибрендовый ИНТЕРНЕТ-МАГАЗИН (как Ozon, Wildberries), где пользователь может купить товары РАЗНЫХ брендов? ВАЖНО: сайты с отзывами, статьями и купонами НЕ являются маркетплейсами (ставь false).
-            5. "is_review_news_site": Является ли ОСНОВНАЯ цель сайта публикация НЕЗАВИСИМЫХ новостей, статей или агрегация отзывов? ВАЖНО: корпоративные сайты брендов с разделом "Новости" не являются новостными порталами. Если ставишь true, то owner_match ДОЛЖЕН быть false.
-            6. "claims_official": Заявляет ли сайт о том, что он является официальным?
-    
-            Ответь СТРОГО в следующем формате без markdown разметки:
-            {{
-                "has_legal_info": false,
-                "owner_match": false,
-                "commercial_intent": false,
-                "is_marketplace": false,
-                "is_review_news_site": false,
-                "claims_official": false
-            }}
-            """
+                    Проанализируй сайт на предмет нарушения прав на товарный знак "{tm_name}".
+                    Владелец ТЗ: "{owner_name}".
+
+                    Данные сайта:
+                    - Заголовок: {site_data.get('title', '')}
+                    - Description: {site_data.get('description', '')}
+                    - Content: {site_data.get('content_sample', '')}
+                    - Contacts: {contacts}
+                    - Владелец домена (WHOIS): {whois_org}
+                    - Владелец сайта найден в списке лицензиатов?: {licensee_match}
+
+                    Определи значения следующих флагов (true или false):
+                    1. "has_legal_info": Указаны ли реквизиты юридического лица (ИНН, ОГРН, ОГРНИП) ИЛИ полное название предприятия (ООО, ПАО, ИП)?
+                    2. "has_physical_address": Указан ли физический адрес офиса или магазина (улица, дом, город)?
+                    3. "owner_match": Является ли сайт официальным? Ставь TRUE, если: а) Владелец домена совпадает с Владельцем ТЗ; б) Владелец сайта найден в списке лицензиатов (см. факт выше); в) На сайте указаны юр. реквизиты, аффилированные с Владельцем ТЗ. Если WHOIS скрыт, ориентируйся только на контакты сайта.
+                    4. "commercial_intent": Является ли целью сайта ПРЯМАЯ продажа товаров/услуг (каталог, цены, корзина, услуги ремонта)?
+                    5. "is_marketplace": Является ли сайт крупным мультибрендовым гипермаркетом (как Ozon, AliExpress)? (Инфо-порталы, сайты с отзывами и купонами — это НЕ маркетплейсы, ставь false).
+                    6. "is_review_news_site": Является ли сайт НЕЗАВИСИМЫМ СМИ, блогом или агрегатором отзывов? (Важно: если это магазин, который просто ведет блок новостей — ставь false).
+                    7. "claims_official": Заявляет ли сайт прямо, что он является "официальным сайтом", "официальным дилером" или "авторизованным центром"?
+
+                    Ответь СТРОГО в формате JSON без markdown:
+                    {{
+                        "has_legal_info": false,
+                        "has_physical_address": false,
+                        "owner_match": false,
+                        "commercial_intent": false,
+                        "is_marketplace": false,
+                        "is_review_news_site": false,
+                        "claims_official": false
+                    }}
+                    """
         ).strip()
 
     def _calculate_domain_similarity(self, tm_name: str, url: str, domain_label: str) -> float:
@@ -174,18 +173,16 @@ class FeatureExtractor:
             normalized[key] = 1 if payload.get(key) else 0
         return normalized
 
-    def _query_llm_features(self, site_data: dict, tm_data: dict) -> dict:
+    def _query_llm_features(self, site_data: dict, tm_data: dict, licensee_match) -> dict:
         prompt = self._build_llm_prompt(
             site_data=site_data,
             tm_name=tm_data.get("name", ""),
             owner_name=tm_data.get("owner_name", ""),
-            mktu_nums=tm_data.get("mktu_nums", []),
+            licensee_match=licensee_match,
         )
-        #print(prompt)
+
         logger.info("Sending LLM request for %s", site_data.get("url"))
         response = query(f"{LLM_SYSTEM_PROMPT}\n\n{prompt}")
-        # print(response['usage']['total_tokens'])
-        # print(response)
         if not response:
             logger.warning("LLM returned empty response for %s", site_data.get("url"))
             return _empty_llm_features()
@@ -252,7 +249,17 @@ class FeatureExtractor:
             site_data=site_data,
             mktu_descriptions=tm_data.get("mktu_descriptions", []),
         )
-        features.update(self._query_llm_features(site_data, tm_data))
+
+        licensees = tm_data.get("licensees", [])
+        site_content = (site_data.get("content_sample", "") + site_data.get("title", "")).lower()
+
+        licensee_match = False
+        for lic in licensees:
+            if lic.lower() in site_content:
+                licensee_match = True
+                break
+
+        features.update(self._query_llm_features(site_data, tm_data, licensee_match))
         features.update(self._build_osint_payload(site_data, whois_info, inn_info))
         final_features = fill_empty_features(features)
 

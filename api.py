@@ -98,10 +98,23 @@ def read_root():
     return FileResponse(INDEX_FILE)
 
 
-@app.get("/api/trademark/{tm_number}")
-def get_tm_info(tm_number: str):
+@app.get("/api/trademark/{tm_numbers}")
+def get_tm_info(tm_numbers: str, manual_name: Optional[str] = None):
+    nums = [n.strip() for n in tm_numbers.split(",")]
+    parser = TrademarkParser()
     try:
-        return TrademarkParser().get_or_fetch_trademark(tm_number)  # tm_data JSON
+        # Агрегируем данные для фронтенда
+        base_data = parser.get_or_fetch_trademark(nums[0], manual_tm_name=manual_name)
+        all_mktu = base_data.get("mktu", [])
+
+        for num in nums[1:]:
+            extra_data = parser.get_or_fetch_trademark(num, manual_tm_name=manual_name)
+            for m_item in extra_data.get("mktu", []):
+                if m_item not in all_mktu:
+                    all_mktu.append(m_item)
+
+        base_data["mktu"] = sorted(all_mktu, key=lambda x: x['number'])
+        return base_data
     except Exception as exc:
         raise HTTPException(status_code=404, detail=f"Trademark lookup failed: {exc}") from exc
 
@@ -137,26 +150,28 @@ def get_scan_results(tm_number: str, latest: bool = False):
         return [_build_scan_result_response(result) for result in results]
 
 
-async def run_pipeline_task(tm_number: str):
-    _reset_scan_state(tm_number)
+async def run_pipeline_task(tm_numbers: list[str], manual_name: str | None):
+    primary_tm = tm_numbers[0]
+    _reset_scan_state(primary_tm)
 
     def update_callback(stage: str, status: str):
         scan_state["stages"][stage] = status
 
     try:
-        pipeline = TrademarkPipeline(tm_number=tm_number, status_callback=update_callback)
+        pipeline = TrademarkPipeline(tm_numbers=tm_numbers, manual_name=manual_name, status_callback=update_callback)
         await pipeline.run()
     finally:
         scan_state["is_running"] = False
 
 
-@app.post("/api/scan/{tm_number}")
-async def start_scan(tm_number: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(run_pipeline_task, tm_number)
+@app.post("/api/scan/{tm_numbers}")
+async def start_scan(tm_numbers: str, background_tasks: BackgroundTasks, manual_name: str | None = None):
+    nums = [n.strip() for n in tm_numbers.split(",")]
+    background_tasks.add_task(run_pipeline_task, nums, manual_name)
     return {
         "status": "accepted",
-        "message": f"Scan for trademark {tm_number} has been started in the background.",
-        "tm_number": tm_number,
+        "message": f"Scan for trademarks {nums} started.",
+        "tm_numbers": nums,
     }
 
 

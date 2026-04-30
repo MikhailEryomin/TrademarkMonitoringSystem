@@ -11,6 +11,8 @@ from modules.reporter import Reporter
 from modules.scraper import AsyncScraper
 from modules.tm_parser import TrademarkParser
 
+import utils.utils as utils
+
 
 def configure_logging(level: int = logging.INFO):
     root_logger = logging.getLogger()
@@ -28,14 +30,22 @@ logger = logging.getLogger(__name__)
 
 
 class TrademarkPipeline:
-    DEFAULT_SCRAPER_LIMIT = 1500
+    DEFAULT_SCRAPER_LIMIT = 10000
 
-    def __init__(self, tm_number: str, status_callback: Callable[[str, str], None] | None):
-        self.tm_number = tm_number
+    def __init__(
+            self,
+            tm_numbers: list[str],
+            manual_name: str | None,
+            status_callback: Callable[[str, str], None] | None
+    ):
+        self.tm_numbers = tm_numbers
+        self.primary_tm_number = tm_numbers[0]  # Сохранять результаты в БД будем по первому (главному) ТЗ
+        self.manual_name = manual_name
         self.status_callback = status_callback
-        self.tm_data: dict = {}  # tm_data JSON (payload)
+
+        self.tm_data: dict = {}
         self.domains: list[str] = []
-        self.scraped_data: list[dict] = []  # List[site_data (JSON)]
+        self.scraped_data: list[dict] = []
         self.analyzed_data: list[dict] = []
         self.predictions: list[dict] = []
 
@@ -51,23 +61,51 @@ class TrademarkPipeline:
             self.status_callback(stage, status)
 
     def _parse_trademark(self):
-        self.tm_data = self.parser.get_or_fetch_trademark(self.tm_number)
-        logger.info("Loaded trademark data for %s", self.tm_number)
-        #logger.info("Trademark payload:\n%s", json.dumps(self.tm_data, ensure_ascii=False, indent=2))
+        all_mktu_nums = set()
+        all_mktu_descriptions = set()
+        all_mktu_full = []
+        primary_tm = None
+
+        # Парсим каждый ТЗ и объединяем классы МКТУ
+        for tm_num in self.tm_numbers:
+            tm_data = self.parser.get_or_fetch_trademark(tm_num, manual_tm_name=self.manual_name)
+            if not primary_tm:
+                primary_tm = tm_data  # Базовые данные (логотип, владелец) берем от первого ТЗ
+
+            all_mktu_nums.update(tm_data.get("mktu_nums", []))
+            all_mktu_descriptions.update(tm_data.get("mktu_descriptions", []))
+
+            # Добавляем уникальные классы для фронтенда
+            for mktu_item in tm_data.get("mktu", []):
+                if mktu_item not in all_mktu_full:
+                    all_mktu_full.append(mktu_item)
+
+        self.tm_data = primary_tm.copy()
+        self.tm_data["mktu_nums"] = list(all_mktu_nums)
+        self.tm_data["mktu_descriptions"] = list(all_mktu_descriptions)
+        self.tm_data["mktu"] = all_mktu_full
+
+        # Если юрист ввел название ТЗ вручную - переопределяем
+        if self.manual_name:
+            logger.info("Using manual TM name: %s", self.manual_name)
+            self.tm_data["name"] = self.manual_name
+            self.tm_data["name_lat"] = utils.get_transliterated_name(self.manual_name)
+
+        logger.info("Aggregated trademark payload:\n%s", json.dumps(self.tm_data, ensure_ascii=False, indent=2))
 
     def _generate_domains(self):
         self.domains = generate_domains(
             tm_name=self.tm_data.get("name_lat", ""),
             mktu_classes=self.tm_data.get("mktu_nums", []),
         )
-        logger.info("Generated %s candidate domains for %s", len(self.domains), self.tm_number)
+        logger.info("Generated %s candidate domains for %s", len(self.domains), self.tm_numbers)
         logger.info("First generated domains: %s", self.domains[:20])
 
     async def _scrape_domains(self, limit):
-        #domains_to_check = self.domains[:limit] if limit else self.domains
-        domains_to_check = [
-            "ozon-job.ru"
-        ]
+        domains_to_check = self.domains[:limit] if limit else self.domains
+        # domains_to_check = [
+        #     "ozon-job.ru"
+        # ]
         logger.info("Starting scraper for %s domains", len(domains_to_check))
         logger.info("Domains passed to scraper: %s", domains_to_check)
         tm_name = self.tm_data.get("name_lat", "")
@@ -115,13 +153,13 @@ class TrademarkPipeline:
     def _report_results(self):
         logger.info("Reporting %s classification results", len(self.predictions))
         self.reporter.report_results(
-            tm_number=self.tm_number,
+            tm_number=self.primary_tm_number,
             analyzed_data=self.analyzed_data,
             predictions=self.predictions,
         )
 
     async def run(self):
-        logger.info("Pipeline started for trademark %s", self.tm_number)
+        logger.info("Pipeline started for trademark %s", self.tm_numbers)
 
         self._update_status("parsing", "running")
         self._parse_trademark()
@@ -147,8 +185,10 @@ class TrademarkPipeline:
         # self._report_results()
         # self._update_status("reporting", "done")
 
-        logger.info("Pipeline finished for trademark %s", self.tm_number)
+        logger.info("Pipeline finished for trademark %s", self.tm_numbers)
 
 
 if __name__ == "__main__":
-    asyncio.run(TrademarkPipeline(tm_number="228275", status_callback=None).run())
+    tm_numbers = ["613744", "450349", "123553"]
+    manual_name = "Samsung"
+    asyncio.run(TrademarkPipeline(tm_numbers=tm_numbers, status_callback=None, manual_name=manual_name).run())

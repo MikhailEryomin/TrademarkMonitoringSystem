@@ -61,11 +61,12 @@ def parse_html(html_content: str) -> dict:
     data["licensees"] = []
     if tags_791:
         for i in range(10):
+            if i >= len(tags_791):
+                break
             tag = tags_791[i]
             next_b = tag.find_next("b")
             if next_b:
                 data["licensees"].append(next_b.get_text(strip=True))
-
 
     data["sign_type"] = _find_next_b_text(soup, r"\(550\)") or DEFAULT_TM_TYPE
     data["registration_date"] = _find_next_b_text(soup, r"\(151\)")
@@ -93,7 +94,6 @@ def parse_html(html_content: str) -> dict:
                         "description": match.group(2).strip(),
                     }
                 )
-
 
     status_row = soup.find("tr", attrs={"class": "Status"})
     if status_row:
@@ -133,7 +133,7 @@ class TrademarkParser:
             logger.warning("Failed to process trademark image %s: %s", image_url, exc)
             return None, ""
 
-    def process_trademark_url(self, url: str) -> dict:
+    def process_trademark_url(self, url: str, manual_tm_name: str) -> dict:
         logger.info("Fetching trademark page %s", url)
         response = requests.get(url, headers=REQUEST_HEADERS, timeout=10)
         response.raise_for_status()
@@ -145,9 +145,12 @@ class TrademarkParser:
         if not image_url:
             return tm_data
 
-        _, extracted_text = self.get_image_and_text(image_url)
-        if extracted_text:
-            tm_data["name"] = extracted_text
+        if manual_tm_name:
+            tm_data["name"] = manual_tm_name
+        else:
+            _, extracted_text = self.get_image_and_text(image_url)
+            if extracted_text:
+                tm_data["name"] = extracted_text
 
         logger.info("Trademark payload after OCR: %s", json.dumps(tm_data, ensure_ascii=False))
         return tm_data
@@ -178,7 +181,7 @@ class TrademarkParser:
         }
 
     def _get_cached_payload(self, cached_tm: Trademark) -> dict:
-        tm_name = cached_tm.name or "unknown"
+        tm_name = cached_tm.name
         licensees = cached_tm.licensees
         owner_name = cached_tm.owner.name if cached_tm.owner else "Unknown Owner"
         logo_url = cached_tm.image_url or "undefined"
@@ -188,12 +191,12 @@ class TrademarkParser:
                     json.dumps(payload, ensure_ascii=False))
         return payload
 
-    def _save_fetched_trademark(self, db, mark_number: str, tm_data: dict) -> dict:
-        tm_name = tm_data.get("name") or "Unknown"
+    def _save_fetched_trademark(self, db, mark_number: str, tm_data: dict, manual_tm_name: str = None) -> dict:
+        tm_name = manual_tm_name or tm_data.get("name") or "Unknown"
         owner_name = tm_data.get("owner_name") or "Unknown Owner"
         logo_url = tm_data.get("image_url")
         licensees = tm_data.get("licensees")
-        sign_type=tm_data.get("sign_type") or DEFAULT_TM_TYPE
+        sign_type = tm_data.get("sign_type") or DEFAULT_TM_TYPE
         mktu_classes = tm_data.get("mktu_classes", [])
 
         owner = db.query(Owner).filter_by(name=owner_name).first()
@@ -230,13 +233,23 @@ class TrademarkParser:
         logger.info("Trademark %s fetched and saved: %s", mark_number, json.dumps(payload, ensure_ascii=False))
         return payload
 
-    def get_or_fetch_trademark(self, tm_number: str) -> dict:
+    def get_or_fetch_trademark(self, tm_number: str, manual_tm_name: str) -> dict:
         logger.info("Resolving trademark %s", tm_number)
         with SessionLocal() as db:
             cached_tm = db.query(Trademark).filter_by(registration_number=tm_number).first()
+
             if cached_tm:
-                return self._get_cached_payload(cached_tm)  # tm_data JSON
+                if manual_tm_name and cached_tm.name != manual_tm_name:
+                    logger.info("Updating cached TM name to manual name: %s", manual_tm_name)
+                    cached_tm.name = manual_tm_name
+                    db.commit()
+                elif not manual_tm_name:
+                    _, extracted_text = self.get_image_and_text(cached_tm.image_url)
+                    if extracted_text:
+                        cached_tm.name = extracted_text
+                        db.commit()
+                return self._get_cached_payload(cached_tm)
 
             logger.info("Trademark %s not found in cache, requesting FIPS", tm_number)
-            tm_data = self.process_trademark_url(get_fips_url(tm_number))
-            return self._save_fetched_trademark(db, tm_number, tm_data)  # tm_data JSON
+            tm_data = self.process_trademark_url(get_fips_url(tm_number), manual_tm_name)
+            return self._save_fetched_trademark(db, tm_number, tm_data, manual_tm_name)  # tm_data JSON

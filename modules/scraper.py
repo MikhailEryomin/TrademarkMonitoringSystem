@@ -72,6 +72,17 @@ class AsyncScraper:
 
         return None
 
+    @staticmethod
+    def is_russian_jurisdicton(html_content: str) -> bool:
+        if re.search(r'(?:\+7|8)[\s\-\(\)]*\d{2}', html_content):
+            return True
+
+        if any(x in html_content for x in ['₽', 'руб.', 'рублей', 'rubles']):
+            return True
+
+        if any(x in html_content for x in ['ИНН', 'ОГРН', 'ООО ', 'ИП ']):
+            return True
+
     async def _fetch_with_protocol(self, session: aiohttp.ClientSession, domain: str, target_url: str) -> Optional[
         Dict]:
         async with self.semaphore:
@@ -93,21 +104,23 @@ class AsyncScraper:
                 parsed_html = await response.text(errors="ignore")
                 metadata = self.extract_metadata(parsed_html, final_url)  # site_data JSON
 
-                # logging
+                # language
                 language = metadata.get("language")
+                if language != 'ru' and language != 'en':
+                    return None
+                if language == 'en' and not self.is_russian_jurisdicton(html_content=parsed_html):
+                    return None
+
                 title = metadata.get("title")
                 description = metadata["description"]
                 content_sample = metadata["content_sample"]
-                contacts = json.dumps(metadata.get("contacts", {}), ensure_ascii=False)
-                # print(
-                #     f"| INFO | modules.scraper | Metadata extracted for {final_url}: language={language} title={title} contacts={contacts}", )
 
                 # Parking check
                 is_parked = self.is_parked(content_sample, title, description)
                 if is_parked:
                     metadata["status"] = "parked"
                     logger.info("Detected parked page: %s", final_url)
-                    return metadata  # include parked sites to results
+                    return None  # include parked sites to results
 
                 # Set active or redirect status
                 domain_label = utils.extract_domain_label(domain)

@@ -15,15 +15,11 @@ EXCEL_FILE = "output/Сalibration_Dataset.xlsx"
 OUTPUT_JSON = "core/training_data.json"
 
 TM_MAPPING = {
-    "Samsung": "123553",
+    "Samsung": ["123553", "129649", "450349", "613744", ],
     "Ozon": "752380",
     "Avito": "919944",
     "Adidas": "018806",
     "Sberbank": "762980",
-    "Тбанк": "1026734",
-    "Газпром": "228275",
-    "М.Видео": "418225",
-    "ВТБ": "329009"
 }
 
 
@@ -42,8 +38,6 @@ def map_label(raw_label: str) -> str:
         return "Парковка"
     elif "нарушение" in label_str:
         return "Нарушение"
-    elif "требует проверки" in label_str:
-        return "Подозрительный"
 
     return "Unknown"
 

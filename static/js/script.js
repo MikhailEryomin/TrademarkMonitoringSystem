@@ -5,25 +5,48 @@ const API_BASE_URL = "http://localhost:8000/api";
     // --- ФУНКЦИИ ВКЛАДКИ СКАНИРОВАНИЯ ---
 
     async function fetchTMInfo() {
-        const tmNumber = document.getElementById('tmInputScan').value.trim();
-        if (!tmNumber) return alert("Введите номер ТЗ");
+        const tmNumbers = document.getElementById('tmInputScan').value.trim();
+        const manualName = document.getElementById('manualNameInput').value.trim();
+        if (!tmNumbers) return alert("Введите номер(а) ТЗ");
 
         const btn = document.getElementById('btnFindTM');
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Поиск...`;
         btn.disabled = true;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/trademark/${tmNumber}`);
+            let url = `${API_BASE_URL}/trademark/${tmNumbers}`;
+            if (manualName) {
+                url += `?manual_name=${encodeURIComponent(manualName)}`;
+            }
+
+            const res = await fetch(url);
             if (!res.ok) throw new Error("ТЗ не найден или ошибка сервера");
             const data = await res.json();
 
-            // Заполняем карточку
             document.getElementById('tmLogo').src = data.logo_url;
             document.getElementById('tmName').innerText = `${data.name} (${data.name_lat})`;
             document.getElementById('tmOwner').innerText = data.owner_name;
-            document.getElementById('tmClasses').innerText = data.mktu_nums.join(', ');
 
-            // Показываем карточку и кнопку запуска
+            // Вывод классов МКТУ с описанием
+            let classesHtml = '';
+            data.mktu.forEach((cls, index) => {
+                classesHtml += `
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading${index}">
+                        <button class="accordion-button collapsed py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                            <span class="badge bg-primary me-2">${cls.number}</span>
+                            <span class="small text-dark">Посмотреть рубрики</span>
+                        </button>
+                    </h2>
+                    <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#mktuAccordion">
+                        <div class="accordion-body small text-muted bg-light">
+                            ${cls.description}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('tmClasses').innerHTML = classesHtml;
+
             document.getElementById('tmInfoCard').classList.remove('d-none');
             document.getElementById('progressCard').classList.add('d-none');
             document.getElementById('currentResultsCard').classList.add('d-none');
@@ -39,10 +62,12 @@ const API_BASE_URL = "http://localhost:8000/api";
     }
 
     async function startScan() {
-        const tmNumber = document.getElementById('tmInputScan').value.trim();
-        currentScannedTM = tmNumber;
+        const tmNumbers = document.getElementById('tmInputScan').value.trim();
+        const manualName = document.getElementById('manualNameInput').value.trim();
 
-        // Блокируем кнопку и показываем панель прогресса
+        // В БД результаты сохранятся по первому номеру
+        currentScannedTM = tmNumbers.split(',')[0].trim();
+
         const btnStart = document.getElementById('btnStartScan');
         btnStart.disabled = true;
         btnStart.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Сканирование...`;
@@ -52,13 +77,18 @@ const API_BASE_URL = "http://localhost:8000/api";
         resetProgressUI();
 
         try {
-            const res = await fetch(`${API_BASE_URL}/scan/${tmNumber}`, { method: 'POST' });
+            // Передаем manual_name как query параметр
+            let url = `${API_BASE_URL}/scan/${tmNumbers}`;
+            if (manualName) {
+                url += `?manual_name=${encodeURIComponent(manualName)}`;
+            }
+
+            const res = await fetch(url, { method: 'POST' });
             if (!res.ok) {
                 const err = await res.json();
                 throw new Error(err.detail);
             }
 
-            // Начинаем поллинг статуса каждую секунду
             pollInterval = setInterval(checkStatus, 1000);
 
         } catch (error) {
