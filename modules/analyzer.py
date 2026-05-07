@@ -34,7 +34,6 @@ def _empty_llm_features() -> dict:
 
 
 def fill_empty_features(features: dict) -> dict:
-    """Fill missing feature flags with safe defaults."""
     defaults = {
         "homogeneity_score": 0.0,
         "has_contacts_info": features.get("has_contacts_info", 0),
@@ -124,14 +123,40 @@ class FeatureExtractor:
         return similarity
 
     def _calculate_homogeneity(self, site_data: dict, mktu_descriptions: list[str]) -> float:
-        if not self.bert_model or not site_data or not mktu_descriptions:
+        if not self.bert_model or not mktu_descriptions:
+            logger.warning("BERT model OR MKTU descriptions are not found")
             return 0.0
 
-        text_candidates = [
-            site_data.get("title", ""),
-            site_data.get("description", ""),
-            site_data.get("content_sample", "")[:1000],
+        text_candidates = []
+
+        if site_data.get("title"):
+            text_candidates.append(site_data["title"])
+        if site_data.get("description"):
+            text_candidates.append(site_data["description"])
+
+        raw_content = site_data.get("content_sample", "")[:1500]
+        content_fragments = [frag.strip() for frag in raw_content.split('|') if frag.strip()]
+        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+        NAVIGATION_STOPWORDS = [
+            'главная', 'меню', 'контакты', 'корзина', 'оплата',
+            'доставка', 'каталог', 'категории', 'вход', 'регистрация'
         ]
+        for frag in content_fragments:
+            clean_frag = frag.lower()
+            clean_frag = re.sub(email_pattern, '', clean_frag).strip()
+
+            for word in NAVIGATION_STOPWORDS:
+                clean_frag = clean_frag.replace(word, '')
+
+            clean_frag = clean_frag.replace('|', ' ').replace('-', ' ').strip()
+
+            if len(clean_frag) > 20:
+                text_candidates.append(clean_frag)
+
+        if not text_candidates:
+            logger.warning("BERT: no one text_candidate found")
+            return 0.0
+
         texts_to_check = [text for text in text_candidates if len(text) > 5]
 
         if not texts_to_check:
@@ -142,7 +167,7 @@ class FeatureExtractor:
             items = re.split(r'[,;]', desc)
             for item in items:
                 clean_item = item.strip()
-                if len(clean_item) > 3:
+                if len(clean_item) > 10:
                     mktu_items.append(clean_item)
 
         if not mktu_items:
@@ -150,17 +175,30 @@ class FeatureExtractor:
 
         site_embeddings = self.bert_model.encode(texts_to_check)
         mktu_embeddings = self.bert_model.encode(mktu_items)
-
-        # Матричное вычисление сходства
         cos_scores = util.cos_sim(site_embeddings, mktu_embeddings)
 
-        max_similarity = float(cos_scores.max())
+        import torch
+        top_k = min(3, cos_scores.numel())
+        top_values, _ = torch.topk(cos_scores.flatten(), top_k)
+        avg_max_score = torch.mean(top_values).item()
 
-        result = round(max_similarity, 4)
-        logger.info(
-            "Homogeneity score=%s (compared %s site fragments vs %s MKTU items)",
-            result, len(texts_to_check), len(mktu_items)
-        )
+        max_score = torch.max(cos_scores).item()
+        best_match_indices = torch.nonzero(cos_scores == max_score)
+        best_site_idx = best_match_indices[0][0].item()
+        best_mktu_idx = best_match_indices[0][1].item()
+
+        best_site_text = texts_to_check[best_site_idx]
+        best_mktu_text = mktu_items[best_mktu_idx]
+
+        final_score = avg_max_score
+        if len(best_mktu_text.split()) <= 2:
+            final_score *= 0.85
+
+        result = round(final_score, 4)
+
+        logger.info(f"[BERT] Final Score (Smoothed): {result} | (Raw Max was: {round(max_score, 4)})")
+        logger.info(f"[BERT] Top Match: '{best_site_text[:50]}...' <-> '{best_mktu_text}'")
+
         return result
 
     @staticmethod
@@ -173,7 +211,7 @@ class FeatureExtractor:
             normalized[key] = 1 if payload.get(key) else 0
         return normalized
 
-    def _query_llm_features(self, site_data: dict, tm_data: dict, licensee_match) -> dict:
+    def _query_llm_features(self, site_data: dict, tm_data: dict, licensee_match: bool) -> dict:
         prompt = self._build_llm_prompt(
             site_data=site_data,
             tm_name=tm_data.get("name", ""),
@@ -212,9 +250,10 @@ class FeatureExtractor:
     def analyze_site(self, site_data: dict, tm_data: dict) -> dict:
 
         url = site_data.get("url", "")  # https://google.com
-        domain = utils.extract_domain(url)  # google.com
-        domain_label = utils.extract_domain_label(domain)
-        whois_info = check_whois(domain)
+        original_domain = site_data.get("original_domain", utils.extract_domain(url)) # google.com
+        domain_label = utils.extract_domain_label(original_domain)
+
+        whois_info = check_whois(original_domain)
         site_data["whois"] = whois_info
         inns = site_data.get("contacts", {}).get("inn", [])
         inn_info = validate_inn(inns[0]) if inns else {}
@@ -235,14 +274,14 @@ class FeatureExtractor:
             "has_contacts_info": 1 if any(site_data.get("contacts", {}).values()) else 0,
             "domain_similarity": self._calculate_domain_similarity(
                 tm_name=tm_data.get("name_lat", ""),
-                url=url,
+                url=original_domain,
                 domain_label=domain_label  # google.com -> google,
             ),
         }
         logger.info("Base analyzer features for %s: %s", url, json.dumps(features, ensure_ascii=False))
 
-        if features["is_redirect"] or features["is_parked"]:
-            logger.info("Deep analysis skipped for %s due to redirect/parked status", url)
+        if features["is_parked"] or site_data.get("status") == "dead":
+            logger.info("LLM Analyzing skipped for %s due to redirect/parked/dead status", url)
             return fill_empty_features(features)
 
         features["homogeneity_score"] = self._calculate_homogeneity(
@@ -259,7 +298,7 @@ class FeatureExtractor:
                 licensee_match = True
                 break
 
-        features.update(self._query_llm_features(site_data, tm_data, licensee_match))
+        features.update(self._query_llm_features(site_data, tm_data, licensee_match=licensee_match))
         features.update(self._build_osint_payload(site_data, whois_info, inn_info))
         final_features = fill_empty_features(features)
 

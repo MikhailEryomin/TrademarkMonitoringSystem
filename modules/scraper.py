@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 CONCURRENCY_LIMIT = 5
 TIMEOUT_SECONDS = 5
 OUTPUT_DIR = "output/json"
-HEAD_LIMIT = 1500
-TAIL_LIMIT = 1500
+HEAD_LIMIT = 2000
+TAIL_LIMIT = 2000
 
 
 def silence_event_loop_exceptions(loop, context):
@@ -57,17 +57,15 @@ class AsyncScraper:
         logger.info("Checking domain %s", domain)
         for protocol in ("https://", "http://"):
             target_url = f"{protocol}{domain}"
-            # logger.info("Trying %s", target_url)
             try:
                 result = await self._fetch_with_protocol(session, domain, target_url)  # site_data JSON
                 if result is not None:
                     return result
-            except (aiohttp.ClientError, socket.gaierror, asyncio.TimeoutError) as exc:
-                logger.debug("Connection failed for %s: %s", target_url, type(exc).__name__)
+            except (socket.gaierror, asyncio.TimeoutError) as exc:
+                logger.warning("Connection failed for %s: %s", target_url, type(exc).__name__)
                 continue
 
             except Exception as exc:
-                logger.warning("Unexpected scraper error for %s: %s", target_url, exc)
                 continue
 
         return None
@@ -82,6 +80,8 @@ class AsyncScraper:
 
         if any(x in html_content for x in ['ИНН', 'ОГРН', 'ООО ', 'ИП ']):
             return True
+
+        return False
 
     async def _fetch_with_protocol(self, session: aiohttp.ClientSession, domain: str, target_url: str) -> Optional[
         Dict]:
@@ -102,25 +102,27 @@ class AsyncScraper:
                 # Parsing metadata
                 final_url = str(response.url)
                 parsed_html = await response.text(errors="ignore")
-                metadata = self.extract_metadata(parsed_html, final_url)  # site_data JSON
-
-                # language
-                language = metadata.get("language")
-                if language != 'ru' and language != 'en':
-                    return None
-                if language == 'en' and not self.is_russian_jurisdicton(html_content=parsed_html):
-                    return None
-
+                metadata = self.extract_metadata(parsed_html, target_url)  # site_data JSON
+                metadata["original_domain"] = domain # for redirects
                 title = metadata.get("title")
                 description = metadata["description"]
                 content_sample = metadata["content_sample"]
+
+                # jurisdiction
+                language = metadata.get("language")
+                logger.info(f"Site language {language}")
+                if language != 'ru' and language != 'en':
+                    return None
+                if language == 'en' and not self.is_russian_jurisdicton(html_content=content_sample):
+                    logger.info(f"Site is not in russian jurisdiction. Skip")
+                    return None
 
                 # Parking check
                 is_parked = self.is_parked(content_sample, title, description)
                 if is_parked:
                     metadata["status"] = "parked"
                     logger.info("Detected parked page: %s", final_url)
-                    return None  # include parked sites to results
+                    return metadata  # include parked sites to results
 
                 # Set active or redirect status
                 domain_label = utils.extract_domain_label(domain)
@@ -192,9 +194,18 @@ class AsyncScraper:
     @staticmethod
     def get_headers() -> Dict[str, str]:
         return {
-            "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
         }
 
     @staticmethod

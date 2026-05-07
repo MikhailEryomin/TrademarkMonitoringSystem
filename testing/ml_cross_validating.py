@@ -15,7 +15,7 @@ def get_system_metrics():
     print("--- ЗАПУСК РАСЧЕТА МЕТРИК ---")
 
     # 1. Загрузка данных
-    with open("../core/training_data.json", "r", encoding="utf-8") as f:
+    with open("../core/training_data_final.json", "r", encoding="utf-8") as f:
         dataset = json.load(f)
 
     clf_helper = TrademarkClassifier()

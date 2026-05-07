@@ -1,6 +1,7 @@
 ﻿import json
 import logging
 import random
+import time
 import re
 import easyocr
 import requests
@@ -80,11 +81,11 @@ def parse_html(html_content: str) -> dict:
         if image and image.get("src"):
             data["image_url"] = image["src"]
 
-    tag_511 = soup.find(string=re.compile(r"\(511\)")).parent
+    tag_511 = soup.find(string=re.compile(r"\(511\)"))
     if tag_511:
+        tag_511 = tag_511.parent
         for bold_tag in tag_511.find_all("b"):
             mktu_block = bold_tag.get_text()
-            print(mktu_block)
             if re.search(r"\(\d{3}\)", mktu_block):
                 break
             for match in re.finditer(r"(\d{2})\s*-\s*([^\n]+)", mktu_block):
@@ -99,6 +100,9 @@ def parse_html(html_content: str) -> dict:
     if status_row:
         data["status"] = re.sub(r"\s+", " ", status_row.find("td").get_text()).strip()
 
+    if not data["mktu_classes"]:
+        raise ValueError("Critical data missing: MKTU classes not found. Page might be a CAPTCHA or invalid.")
+
     return data
 
 
@@ -108,8 +112,8 @@ def get_fips_url(number: int | str) -> str:
 
 
 class TrademarkParser:
-    def __init__(self):
-        self.reader = self._build_ocr_reader()
+    # def __init__(self):
+    #     self.reader = self._build_ocr_reader()
 
     @staticmethod
     def _build_ocr_reader() -> easyocr.Reader:
@@ -135,15 +139,20 @@ class TrademarkParser:
 
     def process_trademark_url(self, url: str, manual_tm_name: str) -> dict:
         logger.info("Fetching trademark page %s", url)
-        response = requests.get(url, headers=REQUEST_HEADERS, timeout=10)
-        response.raise_for_status()
+
+        sleep_time = random.uniform(1.5, 3.5)
+        logger.info(f"Sleeping for {sleep_time:.2f} seconds to bypass FIPS rate limit...")
+        time.sleep(sleep_time)
+
+        try:
+            response = requests.get(url, headers=REQUEST_HEADERS, timeout=120)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Failed to fetch FIPS page: {e}")
+            raise Exception("Failed to fetch data from FIPS. Anti-scraping triggered or timeout.")
+
         tm_data = parse_html(response.text)
-
-        logger.info("Parsed trademark page payload: %s", json.dumps(tm_data, ensure_ascii=False))
-
         image_url = tm_data.get("image_url")
-        if not image_url:
-            return tm_data
 
         if manual_tm_name:
             tm_data["name"] = manual_tm_name
@@ -152,7 +161,7 @@ class TrademarkParser:
             if extracted_text:
                 tm_data["name"] = extracted_text
 
-        logger.info("Trademark payload after OCR: %s", json.dumps(tm_data, ensure_ascii=False))
+        #logger.info("Trademark payload: %s", json.dumps(tm_data, ensure_ascii=False))
         return tm_data
 
     @staticmethod
@@ -162,22 +171,38 @@ class TrademarkParser:
         return datetime.strptime(value, "%d.%m.%Y")
 
     @staticmethod
-    def _normalize_tm_payload(
+    def normalize_tm_payload(
             tm_name: str,
             owner_name: str,
             logo_url: str,
             mktu_classes: list[dict],
             licensees: list[str] = None
     ) -> dict:
+        merged_mktu_dict = {}
+
+        for item in mktu_classes:
+            cls_num = item["number"]
+            cls_desc = item["description"]
+
+            if cls_num in merged_mktu_dict:
+                if cls_desc not in merged_mktu_dict[cls_num]:
+                    merged_mktu_dict[cls_num] += f"; {cls_desc}"
+            else:
+                merged_mktu_dict[cls_num] = cls_desc
+
+        merged_mktu_list = [{"number": k, "description": v} for k, v in sorted(merged_mktu_dict.items())]
+        mktu_nums = list(merged_mktu_dict.keys())
+        mktu_descriptions = list(merged_mktu_dict.values())
+
         return {
             "name": tm_name,
             "name_lat": get_transliterated_name(tm_name),
             "logo_url": logo_url,
             "owner_name": owner_name,
             "licensees": licensees or [],
-            "mktu": mktu_classes,
-            "mktu_descriptions": [item["description"] for item in mktu_classes],
-            "mktu_nums": [item["number"] for item in mktu_classes],
+            "mktu": merged_mktu_list,
+            "mktu_descriptions": mktu_descriptions,
+            "mktu_nums": mktu_nums,
         }
 
     def _get_cached_payload(self, cached_tm: Trademark) -> dict:
@@ -186,9 +211,10 @@ class TrademarkParser:
         owner_name = cached_tm.owner.name if cached_tm.owner else "Unknown Owner"
         logo_url = cached_tm.image_url or "undefined"
         mktu_classes = [{"number": item.number, "description": item.description} for item in cached_tm.mktu_classes]
-        payload = self._normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes, licensees)
-        logger.info("Trademark %s loaded from cache: %s", cached_tm.registration_number,
-                    json.dumps(payload, ensure_ascii=False))
+        payload = self.normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes, licensees)
+        # logger.info("Trademark %s loaded from cache: %s", cached_tm.registration_number,
+        #             json.dumps(payload, ensure_ascii=False))
+        logger.info("Trademark %s loaded from cache", cached_tm.registration_number)
         return payload
 
     def _save_fetched_trademark(self, db, mark_number: str, tm_data: dict, manual_tm_name: str = None) -> dict:
@@ -218,19 +244,24 @@ class TrademarkParser:
         )
 
         for cls_data in mktu_classes:
-            mktu_obj = db.query(MKTUClass).filter_by(number=cls_data["number"]).first()
+            mktu_obj = db.query(MKTUClass).filter_by(
+                number=cls_data["number"],
+                description=cls_data["description"]
+            ).first()
+
             if not mktu_obj:
                 mktu_obj = MKTUClass(number=cls_data["number"], description=cls_data["description"])
                 db.add(mktu_obj)
+
             trademark.mktu_classes.append(mktu_obj)
 
         db.add(trademark)
         db.commit()
 
         # Getting payload from full tm_data
-        payload = self._normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes)
+        payload = self.normalize_tm_payload(tm_name, owner_name, logo_url, mktu_classes)
 
-        logger.info("Trademark %s fetched and saved: %s", mark_number, json.dumps(payload, ensure_ascii=False))
+        # logger.info("Trademark %s fetched and saved: %s", mark_number, json.dumps(payload, ensure_ascii=False))
         return payload
 
     def get_or_fetch_trademark(self, tm_number: str, manual_tm_name: str) -> dict:

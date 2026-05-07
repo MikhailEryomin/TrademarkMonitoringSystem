@@ -9,8 +9,8 @@ def get_transliterated_name(text: str) -> str:
 
 
 def extract_domain(url: str) -> str:
-    # https://www.google.com/some/shit
-    return url.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]  # google.com
+    # https://www.google.com/some/shit -> google.com
+    return url.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]
 
 
 def extract_domain_label(domain: str) -> str:

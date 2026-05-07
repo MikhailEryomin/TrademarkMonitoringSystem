@@ -80,12 +80,13 @@ KEYWORDS = [
 
 PARKING_KEYWORDS = [
     "parked domain", "domain owner", "domain is for sale", "domain for sale", "domain name is for sale", "buy this domain",
-    "domain name is available", "domain is expired", "domain expired", "has been registered", "buy a domain", "Index of"
-    "parked at", "parked free", "godaddy", "dan.com", "sedo", "domain info", "DNS Error", "DNS Resolution Error",
+    "domain name is available", "domain is expired", "domain expired", "has been registered", "buy a domain", "index of"
+    "parked at", "parked free", "godaddy", "dan.com", "sedo", "domain info", "dns error", "dns resolution error",
     "domain has been registered", "future home of", "сайт находится в разработке", "domain is now reserved",
     "хостинг", "домен продается", "купить этот домен", "reg.ru", "nic.ru", "domain name has been registered",
-    "parking", "under construction", "coming soon", "владелец домена", "is hosted", "Домен успешно зарегистрирован",
-    "nginx", "Сайт создан", "Домен доступен к покупке", "Перенаправление домена"
+    "parking", "under construction", "coming soon", "владелец домена", "is hosted", "домен успешно зарегистрирован",
+    "nginx", "сайт создан", "домен доступен к покупке", "перенаправление домена", "произошла ошибка", "перенаправление домена",
+    "домен возможно продаётся", "возможно продается"
 ]
 
 # heuristic data 

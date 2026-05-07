@@ -52,3 +52,6 @@ def validate_inn(inn: str) -> dict:
         "status": company["state"]["status"],
         "address": company["address"]["value"],
     }
+
+
+#print(check_whois("sberbank.ru"))

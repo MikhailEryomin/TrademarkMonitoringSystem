@@ -57,7 +57,7 @@ class MKTUClass(Base):
     __tablename__ = "mktu_classes"
 
     id = Column(Integer, primary_key=True)
-    number = Column(Integer, unique=True, nullable=False, index=True)
+    number = Column(Integer, nullable=False, index=True)
     description = Column(Text, nullable=False)
 
     trademarks = relationship(

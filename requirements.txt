@@ -24,4 +24,6 @@ transliterate~=1.10.2
 easyocr~=1.7.2
 pillow 
 openai~=2.26.0
+torch
 dadata~=25.10.0
+matplotlib

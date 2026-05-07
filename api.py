@@ -103,18 +103,20 @@ def get_tm_info(tm_numbers: str, manual_name: Optional[str] = None):
     nums = [n.strip() for n in tm_numbers.split(",")]
     parser = TrademarkParser()
     try:
-        # Агрегируем данные для фронтенда
         base_data = parser.get_or_fetch_trademark(nums[0], manual_tm_name=manual_name)
-        all_mktu = base_data.get("mktu", [])
-
         for num in nums[1:]:
             extra_data = parser.get_or_fetch_trademark(num, manual_tm_name=manual_name)
-            for m_item in extra_data.get("mktu", []):
-                if m_item not in all_mktu:
-                    all_mktu.append(m_item)
+            base_data["mktu"].extend(extra_data.get("mktu", []))
 
-        base_data["mktu"] = sorted(all_mktu, key=lambda x: x['number'])
-        return base_data
+        final_data = parser.normalize_tm_payload(
+            tm_name=base_data.get("name"),
+            owner_name=base_data.get("owner_name"),
+            logo_url=base_data.get("logo_url"),
+            mktu_classes=base_data.get("mktu"),
+            licensees=base_data.get("licensees")
+        )
+
+        return final_data
     except Exception as exc:
         raise HTTPException(status_code=404, detail=f"Trademark lookup failed: {exc}") from exc
 

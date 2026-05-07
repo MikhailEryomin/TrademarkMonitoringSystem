@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/collect_raw.py" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/collect_raw.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/modules/LLM.py" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/modules/LLM2.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/modules/generator.py" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/utils/get_metrics.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test3.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test_analyzer.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/testing/ml_cross_validating.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/testing/ml_testing.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/testing/system_testing.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/testing/system_testing.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/utils/collect_raw_data_for_dataset.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/utils/collect_raw_data_for_dataset.py" charset="UTF-8" />
     <file url="PROJECT" charset="windows-1251" />
   </component>
 </project>

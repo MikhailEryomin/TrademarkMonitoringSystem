@@ -1,0 +1,21 @@
+метрики 03.05.26
+
+ИТОГОВЫЕ МЕТРИКИ ДЛЯ СТАТЬИ (Macro Average):
+Precision: 0.81
+Recall:    0.79
+F1-score:  0.77
+==============================
+
+ДЕТАЛЬНЫЙ ОТЧЕТ ПО КЛАССАМ:
+              precision    recall  f1-score   support
+
+   Легальный       1.00      0.99      0.99        74
+   Нарушение       0.99      0.91      0.94        75
+    Парковка       0.86      1.00      0.92        42
+
+    accuracy                           0.96       191
+   macro avg       0.95      0.96      0.95       191
+weighted avg       0.96      0.96      0.96       191
+
+
+Process finished with exit code 0

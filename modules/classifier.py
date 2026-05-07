@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 logger = logging.getLogger(__name__)
 
-MODEL_PATH = "core/model_dump.pkl"
+MODEL_PATH = "../core/model_dump.pkl"
 FEATURE_ORDER = [
     "domain_similarity", "homogeneity_score",
     "commercial_intent", "is_marketplace", "is_review_news_site", "claims_official",
@@ -19,9 +19,9 @@ LABEL_MAP = {
     "Парковка": 2,
 }
 INV_LABEL_MAP = {value: key for key, value in LABEL_MAP.items()}
-CONFIDENCE_THRESHOLD = 0.65
+CONFIDENCE_THRESHOLD = 0.7
 DOMAIN_SIMILARITY_THRESHOLD = 0.6
-HOMOGEINTY_THRESHOLD = 0.4
+HOMOGEINTY_THRESHOLD = 0.55
 
 
 class TrademarkClassifier:
@@ -54,7 +54,11 @@ class TrademarkClassifier:
 
         # 2. Сам правообладатель
         if features.get("owner_match") == 1:
-            return "Легальный"
+            is_transparent = features.get("has_legal_info") == 1 or features.get("is_private_whois") == 0
+
+            if is_transparent:
+                logger.info("Rule: Official owner matched and verified (Transparent) -> Legal")
+                return "Легальный"
 
         # 3. 100% Фишинг / Мошенничество
         has_similar_domain = features.get("domain_similarity", 0) >= DOMAIN_SIMILARITY_THRESHOLD
@@ -65,6 +69,13 @@ class TrademarkClassifier:
             # Если домен косит под бренд, продает то же самое, и при этом ИНН фейковый или WHOIS скрыт
             if features.get("is_fake_inn") == 1 or features.get("is_private_whois") == 1:
                 return "Нарушение"
+
+        # 4. РЕДИРЕКТ С ПОХОЖЕГО ДОМЕНА (Арбитраж трафика)
+        if features.get("is_redirect") == 1 and has_similar_domain:
+            # Если мы ушли с домена "ozon-..." куда-то еще, это подозрительно
+            if features.get("owner_match") == 0:
+                logger.info("Rule: Redirect from similar domain to external resource -> Violation/Suspicious")
+                return "Нарушение"  # Или "Подозрительный", если бы он был
 
         # Во всех остальных случаях (маркетплейсы, отзовики, серый импорт) — отдаем ML
         return None

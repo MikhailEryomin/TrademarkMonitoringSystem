@@ -2,8 +2,8 @@ import json
 import os
 from modules.classifier import TrademarkClassifier
 
-# Путь к файлу с обучающей выборкой (собранной скриптом build_dataset.py)
-TRAINING_DATA_FILE = "../core/training_data.json"
+# Путь к файлу с обучающей выборкой (собранной скриптом build_dataset_from_raw_data.py)
+TRAINING_DATA_FILE = "../core/training_data_final.json"
 
 
 def train_classifier():
@@ -11,7 +11,7 @@ def train_classifier():
 
     if not os.path.exists(TRAINING_DATA_FILE):
         print(f"[!] Файл с датасетом {TRAINING_DATA_FILE} не найден!")
-        print("Сначала запустите скрипт сборки датасета (build_dataset.py).")
+        print("Сначала запустите скрипт сборки датасета (build_dataset_from_raw_data.py).")
         return
 
     print("1. Загрузка обучающих данных...")
