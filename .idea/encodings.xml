@@ -6,11 +6,10 @@
     <file url="file://$PROJECT_DIR$/modules/generator.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/test3.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/test_analyzer.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/testing/compare_models.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/testing/ml_cross_validating.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/testing/ml_testing.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/testing/system_testing.py" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/testing/system_testing.py" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/utils/collect_raw_data_for_dataset.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/utils/collect_raw_data_for_dataset.py" charset="UTF-8" />
     <file url="PROJECT" charset="windows-1251" />
   </component>

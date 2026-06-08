@@ -78,7 +78,7 @@ def get_system_metrics():
         # Настройка графики
         fig, ax = plt.subplots(figsize=(8, 6))
         disp.plot(cmap=plt.cm.Blues, ax=ax)
-        plt.title("Матрица ошибок (Test Set)")
+        plt.title("Матрица ошибок")
         plt.tight_layout()
 
         # Сохраняем картинку

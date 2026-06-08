@@ -14,8 +14,8 @@ from core.squatting_cfg import PARKING_KEYWORDS
 
 logger = logging.getLogger(__name__)
 
-CONCURRENCY_LIMIT = 5
-TIMEOUT_SECONDS = 5
+CONCURRENCY_LIMIT = 100
+TIMEOUT_SECONDS = 10
 OUTPUT_DIR = "output/json"
 HEAD_LIMIT = 2000
 TAIL_LIMIT = 2000
@@ -72,7 +72,7 @@ class AsyncScraper:
 
     @staticmethod
     def is_russian_jurisdicton(html_content: str) -> bool:
-        if re.search(r'(?:\+7|8)[\s\-\(\)]*\d{2}', html_content):
+        if re.search(r'(?:\+7|8)[\s\-\(\)]*\d{3}', html_content):
             return True
 
         if any(x in html_content for x in ['₽', 'руб.', 'рублей', 'rubles']):
@@ -150,7 +150,7 @@ class AsyncScraper:
 
         emails = sorted(set(re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", full_text)))
         phones = sorted(set(re.findall(r"(?:\+7|8)(?:[\s\-\(\)]*\d){10}", full_text)))
-        inn_codes = sorted(set(re.findall(r"ИНН\s?:?\s?(\d{10,12})", full_text)))
+        inn_codes = sorted(set(re.findall(r"ИНН\s?\|?:?\s?(\d{10,12})", full_text)))
         content_sample = AsyncScraper._build_content_sample(full_text)
 
         return {

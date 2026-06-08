@@ -154,14 +154,24 @@ const API_BASE_URL = "http://localhost:8000/api";
 
     async function loadCurrentResults(tmNumber) {
         try {
-            const itemBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(item))));
+            const res = await fetch(`${API_BASE_URL}/results/${tmNumber}?latest=true`);
+            if (!res.ok) throw new Error("Ошибка загрузки результатов");
+
             const data = await res.json();
 
             const tbody = document.querySelector('#currentResultsTable tbody');
             tbody.innerHTML = '';
 
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Новых результатов не найдено.</td></tr>`;
+                document.getElementById('currentResultsCard').classList.remove('d-none');
+                return;
+            }
+
             data.forEach(item => {
-                const itemJson = encodeURIComponent(JSON.stringify(item));
+                // Кодируем item ВНУТРИ цикла
+                const itemBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(item))));
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.id}</td>
@@ -170,16 +180,17 @@ const API_BASE_URL = "http://localhost:8000/api";
                     <td>${item.confidence ? (item.confidence * 100).toFixed(0) + '%' : '-'}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary" onclick="showDetails('${itemBase64}')">
-                            <i class="bi bi-info-circle"></i>
+                            <i class="bi bi-info-circle"></i> Детали
                         </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
+            // Показываем карточку с результатами
             document.getElementById('currentResultsCard').classList.remove('d-none');
         } catch (error) {
-            console.error(error);
+            console.error("Ошибка в loadCurrentResults:", error);
         }
     }
 
@@ -203,29 +214,50 @@ const API_BASE_URL = "http://localhost:8000/api";
         const whois = osint.whois || {};
         const innData = osint.inn_validation || {};
 
-        let osintHtml = `<p><strong>Владелец домена (WHOIS):</strong><br>${whois.registrant_org || 'Неизвестно'} ${whois.is_private ? '<span class="badge bg-warning text-dark">Скрыт</span>' : ''}</p>`;
+        let osintHtml = `<p><strong>Администратор домена (WHOIS):</strong><br>${whois.registrant_org || 'Неизвестно'}</p>`;
 
         const phones = contacts.phones || [];
         if (phones.length > 0) {
-            osintHtml += `<strong>Телефоны:</strong><ul>`;
+            osintHtml += `<strong>Телефоны:</strong>`;
             phones.forEach(phone => {
-                const googleLink = `https://www.google.com/search?q="${encodeURIComponent(phone)}"`;
-                osintHtml += `<li><a href="${googleLink}" target="_blank">${phone} 🔍</a></li>`;
+                const googleLink = `https://www.google.com/search?q=${encodeURIComponent(phone)}`;
+                osintHtml += `<br><a href="${googleLink}" target="_blank">${phone} </a>`;
             });
-            osintHtml += `</ul>`;
+            osintHtml += `<br><br>`;
+        }
+
+        // --- Добавил вывод ИНН, чтобы в деталях было видно прозрачность бизнеса ---
+        const inns = contacts.inn || [];
+        if (inns.length > 0) {
+            osintHtml += `<strong>ИНН:<br></strong> ${inns[0]} `;
+            if (innData.exists) {
+                const statusColor = innData.status === "ACTIVE" ? "success" : "danger";
+                osintHtml += `<br>ФНС: ${innData.name}`;
+                if (innData.address) {
+                    osintHtml += `<br>${innData.address}`;
+                }
+                let statusText = ""
+                if (innData.status == "ACTIVE") {statusText = "Активен"} else statusText = "Неактивен"
+                osintHtml += `<br>Статус: <span class="badge bg-${statusColor}">${statusText}</span>`
+            } else {
+                osintHtml += `<span class="badge bg-danger">В реестре не найден!</span>`;
+            }
+            osintHtml += ` <br>`;
         }
 
         document.getElementById('modalOsintContent').innerHTML = osintHtml;
 
         const mlFeatures = { ...item.features };
-        delete mlFeatures.osint;
+        delete mlFeatures.osint; // Прячем OSINT из JSON, так как мы его вывели красиво выше
         document.getElementById('modalFeaturesJson').innerText = JSON.stringify(mlFeatures, null, 2);
 
-        setTimeout(() => {
-            const modalElement = document.getElementById('detailsModal');
-            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-            modal.show();
-        }, 50);
+        // Надежный вызов модального окна Bootstrap 5
+        const modalElement = document.getElementById('detailsModal');
+        let modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalElement);
+        }
+        modalInstance.show();
     }
 
     // --- ФУНКЦИИ ВКЛАДКИ ИСТОРИИ ---

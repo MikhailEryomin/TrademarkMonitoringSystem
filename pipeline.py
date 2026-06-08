@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class TrademarkPipeline:
-    DEFAULT_SCRAPER_LIMIT = 20000
+    DEFAULT_SCRAPER_LIMIT = 5000
 
     def __init__(
             self, tm_numbers: list[str],
@@ -104,14 +104,13 @@ class TrademarkPipeline:
         # domains_to_check = [
         #     "ozon-gaz.ru",
         #     "ozon-m.ru",
-        #     "job-ozon.ru"
+        #     "job-ozon.ru",
         # ]
         logger.info("Starting scraper for %s domains", len(domains_to_check))
         logger.info("Domains passed to scraper: %s", domains_to_check)
         tm_name = self.tm_data.get("name_lat", "")
         self.scraped_data = await self.scraper.run(tm_name, domains_to_check)  # site_data JSON
         logger.info("Scraped %s active or parked websites", len(self.scraped_data))
-        #print(f"Scraper output:\n{json.dumps(self.scraped_data, ensure_ascii=False, indent=2)}")
 
     async def _analyze_sites(self):
         if not self.scraped_data:
@@ -189,10 +188,10 @@ class TrademarkPipeline:
 
 
 if __name__ == "__main__":
-    # tm_numbers = ["450349", "613744", "123553"]
-    # manual_name = "Samsung"
-    tm_numbers = ["534371", "554896", "617430", "952268"]
-    manual_name = "Ozon"
+    tm_numbers = ["450349", "613744", "123553"]
+    manual_name = "Samsung"
+    # tm_numbers = ["534371", "554896", "617430", "952268"]
+    # manual_name = "Ozon"
     # tm_numbers = ["255063", "018806", "1198187"]
     # manual_name = "Adidas"
     # tm_numbers = ["762980", "469357", "463469", "417925", "549950"]

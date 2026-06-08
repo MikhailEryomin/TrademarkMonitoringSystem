@@ -70,7 +70,7 @@ def run_system_test():
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=target_names)
     fig, ax = plt.subplots(figsize=(10, 8))
     disp.plot(cmap=plt.cm.Greens, ax=ax)
-    plt.title("System Confusion Matrix (Heuristics + ML)")
+    plt.title("Матрица ошибок системы (Эвристики + ML)")
     plt.savefig("../output/system_confusion_matrix.png")
     print("\n[+] Матрица ошибок системы сохранена в output/system_confusion_matrix.png")
     plt.show()

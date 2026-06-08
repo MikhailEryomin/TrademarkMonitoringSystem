@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 logger = logging.getLogger(__name__)
 
-MODEL_PATH = "../core/model_dump.pkl"
+MODEL_PATH = "core/model_dump.pkl"
 FEATURE_ORDER = [
     "domain_similarity", "homogeneity_score",
     "commercial_intent", "is_marketplace", "is_review_news_site", "claims_official",
@@ -19,7 +19,7 @@ LABEL_MAP = {
     "Парковка": 2,
 }
 INV_LABEL_MAP = {value: key for key, value in LABEL_MAP.items()}
-CONFIDENCE_THRESHOLD = 0.7
+CONFIDENCE_THRESHOLD = 0.8
 DOMAIN_SIMILARITY_THRESHOLD = 0.6
 HOMOGEINTY_THRESHOLD = 0.55
 
@@ -38,6 +38,8 @@ class TrademarkClassifier:
 
         if os.path.exists(MODEL_PATH):
             self.load_model()
+        else:
+            logging.error("ML Model dump not found!")
 
     def _dict_to_vector(self, feature_dict: dict) -> list:
         vector = [feature_dict.get(key, 0) for key in self.feature_order]
@@ -99,10 +101,6 @@ class TrademarkClassifier:
                 "method": "Heuristic"
             }
 
-        # 2. Если ML не обучен - заглушка
-        if not self.is_trained:
-            return {"class": "Не обучена", "confidence": 0.0, "method": "None"}
-
         # 3. Работа ML (Random Forest)
         vector = [self._dict_to_vector(feature_dict)]
         prediction_idx = self.model.predict(vector)[0]
@@ -111,7 +109,7 @@ class TrademarkClassifier:
 
         predicted_class = INV_LABEL_MAP[prediction_idx]
 
-        # 4. ЛОГИКА "ПОДОЗРИТЕЛЬНОГО" САЙТА ЧЕРЕЗ CONFIDENCE
+        # 4. ЛОГИКА СТАТУСА "ТРЕБУЕТ ПРОВЕРКИ" ЧЕРЕЗ CONFIDENCE
         # Если модель не уверена (вероятность меньше 65%), мы искусственно меняем статус
         if confidence < CONFIDENCE_THRESHOLD:
             return {
