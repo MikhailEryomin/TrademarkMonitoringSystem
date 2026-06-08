@@ -14,7 +14,7 @@ from core.squatting_cfg import PARKING_KEYWORDS
 
 logger = logging.getLogger(__name__)
 
-CONCURRENCY_LIMIT = 100
+CONCURRENCY_LIMIT = 20
 TIMEOUT_SECONDS = 10
 OUTPUT_DIR = "output/json"
 HEAD_LIMIT = 2000
